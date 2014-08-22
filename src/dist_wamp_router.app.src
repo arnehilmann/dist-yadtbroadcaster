@@ -1,0 +1,21 @@
+
+{application, dist_wamp_router, [
+	{id, "dist_wamp_router"},
+	{description, "a distributed wamp router"},
+	{vsn, "0.0.1"},
+	{modules, []},
+	{registered, []},
+	{applications, [
+		kernel,
+    sasl,
+		stdlib,
+		crypto,
+    ranch,
+    cowboy,
+    erwa
+
+     ,debugger, runtime_tools
+	]},
+	{mod, {dist_wamp_router_app, []}},
+	{env, []}
+]}.
