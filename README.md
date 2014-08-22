@@ -1,24 +1,21 @@
-Erwa simple router example
-==========================
+Distributed Wamp Router
+=======================
 
-To try this example, you need GNU `make` and `git` in your PATH.
+Multiple Wamp Router forming a cluster, allowing clients to subscribe and
+publish to any of them
 
-To build the example, run the following command:
+based on the [simple router example](https://github.com/bwegh/erwa.git)
+
+tl;dr
+-----
 
 ``` bash
 $ make
+
+$ ./_rel/dist_wamp_router/bin/dist_wamp_router foreground
 ```
 
-To start the release in the foreground:
-
-``` bash
-$ ./_rel/bin/simple_router console
-```
-
-Then point your browser twice to port 8080:
-
-
-Play around with the client.
+Then point your browser twice to port 8080...
 
 Also have a look at [the Wamp specification](http://wamp.ws/spec) for further
 informations on the possibilities.

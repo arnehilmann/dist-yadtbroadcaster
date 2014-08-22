@@ -8,3 +8,5 @@ relx
 _rel
 .*.swp
 *~
+ebin
+.*.v1
