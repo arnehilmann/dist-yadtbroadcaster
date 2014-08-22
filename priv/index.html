@@ -26,7 +26,7 @@
             function connect()
             {
                 var Encoding = $('#enc_type').val();
-                wsHost = 'ws://localhost:8080/wamp';
+                wsHost = 'ws://' + document.location.host + '/wamp';
                 Realm = $('#realm').val();
                 wamp = new Wampy(wsHost, {onConnect: function() { onConnect(); },
                                           onClose: function() { onDisconnect(); },
