@@ -1,0 +1,4 @@
+#!/bin/bash
+
+_rel/dist_wamp_router/bin/dist_wamp_router start
+/usr/sbin/sshd -D
