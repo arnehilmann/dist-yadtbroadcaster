@@ -26,5 +26,13 @@ init([]) ->
                                            ]}
                                     ]),
   {ok, _} = cowboy:start_http(http, 100, [{port, 8080}],[{env, [{dispatch, Dispatch}]}]),
-  {ok,_} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
+  {ok, RanchPid} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
+  io:format("ranch result: ~p~n", [RanchPid]),
+  register(ranch, RanchPid),
+  net_adm:ping('dist_wamp_router@node1'),
+  net_adm:ping('dist_wamp_router@node2'),
+  net_adm:ping('dist_wamp_router@node3'),
+  N2 = hd(nodes()),
+  R2 = rpc:call(N2, erlang, whereis, [ranch]),
+  io:format("ranch on ~p: ~p~n", [N2, R2]),
   {ok, {{one_for_one, 10, 10}, []}}.
