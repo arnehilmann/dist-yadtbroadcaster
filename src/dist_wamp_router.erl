@@ -25,17 +25,14 @@ init([]) ->
                                       {'_', [
                                              {"/", cowboy_static, {priv_file, dist_wamp_router, "index.html"}},
                                              {"/wamp", my_ws_handler, []},
-                                             %{"/wamp", erwa_ws_handler, []},
                                              {"/static/[...]", cowboy_static, {priv_dir, dist_wamp_router, "static"}}
                                             ]}
                                      ]),
     {ok, _} = cowboy:start_http(http, 100, [{port, 8080}],[{env, [{dispatch, Dispatch}]}]),
-    {ok, RanchPid} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
-    io:format("ranch result: ~p~n", [RanchPid]),
-    %register(ranch, RanchPid),
+    {ok, _} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
 
-	RemoteRanch = erlang:spawn_link(?MODULE, listen_for_forwards, []),
-	register(ranch, RemoteRanch),
+    ForwardListener = erlang:spawn_link(?MODULE, listen_for_forwards, []),
+    register(forwards, ForwardListener),
 
     {ok, Dir} = file:get_cwd(),
     io:format('~p~n', [Dir]),
@@ -67,9 +64,9 @@ read_peers() ->
     end.
 
 listen_for_forwards() ->
-	receive
-		{From, Data} ->
-		        io:format("received data from ~p~n", [From])
-	end,
-	listen_for_forwards().
+    receive
+        {From, _Data} ->
+            io:format("received data from ~p~n", [From])
+    end,
+    listen_for_forwards().
 
