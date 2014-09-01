@@ -8,6 +8,7 @@
 -export([websocket_info/3]).
 -export([websocket_terminate/3]).
 
+
 -define(SUBPROTHEADER,<<"sec-websocket-protocol">>).
 -define(WSMSGPACK,<<"wamp.2.msgpack">>).
 -define(WSJSON,<<"wamp.2.json">>).
@@ -21,7 +22,7 @@
                }).
 
 init({Transport, http}, _Req, _Opts) when Transport == tcp; Transport == ssl ->
-  {upgrade, protocol, cowboy_websocket}.
+  	{upgrade, protocol, cowboy_websocket}.
 
 websocket_init(_TransportName, Req, _Opts) ->
   % need to check for the wamp.2.json or wamp.2.msgpack
@@ -70,11 +71,23 @@ websocket_terminate(_Reason, _Req, _State) ->
   ok.
 
 
+forward_to_others(_, []) ->
+	ok;
+forward_to_others(Messages, [H|T]) ->
+	forward_to_other(Messages, H),
+	forward_to_others(Messages, T).
+
+forward_to_other(Messages, Node) ->
+	io:format("forwarding messages to ~p~n", [Node]),
+	{ranch, Node} ! {self(), Messages}.
+
 handle_wamp(Data,#state{buffer=Buffer, enc=Enc, router=Router}=State) ->
-  {Messages,NewBuffer} = erwa_protocol:deserialize(<<Buffer/binary, Data/binary>>,Enc),
-  io:format("~p~n", [Messages]),
-  {ok,NewRouter} = erwa_protocol:forward_messages(Messages,Router),
-  {ok,State#state{router=NewRouter,buffer=NewBuffer}}.
+	{Messages,NewBuffer} = erwa_protocol:deserialize(<<Buffer/binary, Data/binary>>,Enc),
+	io:format("~p~n", [Messages]),
+	ok = forward_to_others(Messages, nodes()),
+	{ok,NewRouter} = erwa_protocol:forward_messages(Messages,Router),
+	{ok,State#state{router=NewRouter,buffer=NewBuffer}}.
+
 
 -ifdef(TEST).
 

@@ -8,6 +8,10 @@
 %% supervisor.
 -export([init/1]).
 
+
+-export([listen_for_forwards/0]).
+
+
 %% API.
 
 -spec start_link() -> {ok, pid()}.
@@ -28,7 +32,10 @@ init([]) ->
     {ok, _} = cowboy:start_http(http, 100, [{port, 8080}],[{env, [{dispatch, Dispatch}]}]),
     {ok, RanchPid} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
     io:format("ranch result: ~p~n", [RanchPid]),
-    register(ranch, RanchPid),
+    %register(ranch, RanchPid),
+
+	RemoteRanch = erlang:spawn_link(?MODULE, listen_for_forwards, []),
+	register(ranch, RemoteRanch),
 
     {ok, Dir} = file:get_cwd(),
     io:format('~p~n', [Dir]),
@@ -38,9 +45,6 @@ init([]) ->
 
     ok = ping_peers(Peers),
     io:format("nodes responding: ~p~n", [nodes()]),
-    %N2 = hd(nodes()),
-    %R2 = rpc:call(N2, erlang, whereis, [ranch]),
-    %io:format("ranch on ~p: ~p~n", [N2, R2]),
     {ok, {{one_for_one, 10, 10}, []}}.
 
 
@@ -61,4 +65,11 @@ read_peers() ->
         {ok, FileContent} ->    Peers = string:tokens(binary_to_list(FileContent), ", \n"),
                                 {ok, Peers}
     end.
+
+listen_for_forwards() ->
+	receive
+		{From, Data} ->
+		        io:format("received data from ~p~n", [From])
+	end,
+	listen_for_forwards().
 
