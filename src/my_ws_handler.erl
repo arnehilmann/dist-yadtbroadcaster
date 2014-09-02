@@ -77,13 +77,20 @@ forward_to_others(Messages, [H|T]) ->
     forward_to_other(Messages, H),
     forward_to_others(Messages, T).
 
-forward_to_other(Messages, Node) ->
-    io:format("forwarding messages to ~p~n", [Node]),
-    {forwards, Node} ! {self(), Messages}.
+forward_to_other({publish, _, _, _, _, _}=Message, Node) ->
+    io:format("forwarding message ~p to ~p~n", [Message, Node]),
+    {forwards, Node} ! {self(), Message};
+forward_to_other([H|T], Node) ->
+    forward_to_other(H, Node),
+    forward_to_other(T, Node);
+forward_to_other(Message, _) ->
+    io:format("refraining from forwarding message ~p~n", [Message]),
+    ok.
+    
 
 handle_wamp(Data,#state{buffer=Buffer, enc=Enc, router=Router}=State) ->
     {Messages,NewBuffer} = erwa_protocol:deserialize(<<Buffer/binary, Data/binary>>,Enc),
-    io:format("~p~n", [Messages]),
+    io:format("handling wamp messages: ~p~n", [Messages]),
     ok = forward_to_others(Messages, nodes()),
     {ok,NewRouter} = erwa_protocol:forward_messages(Messages,Router),
     {ok,State#state{router=NewRouter,buffer=NewBuffer}}.

@@ -12,6 +12,8 @@
 -export([listen_for_forwards/0]).
 
 
+-define(WSKEY, {pubsub, wsbroadcast}).
+
 %% API.
 
 -spec start_link() -> {ok, pid()}.
@@ -65,8 +67,15 @@ read_peers() ->
 
 listen_for_forwards() ->
     receive
-        {From, _Data} ->
-            io:format("received data from ~p~n", [From])
+        {From, Data} ->
+            io:format("received data from ~p: ~p~n", [From, Data]),
+            WampRouter = whereis(erwa_router),
+            io:format("forwarding to local wamp router ~p~n", [WampRouter]),
+            if 
+                WampRouter =/= undefined ->
+                    WampRouter ! Data;
+                true -> ok
+            end
     end,
     listen_for_forwards().
 
