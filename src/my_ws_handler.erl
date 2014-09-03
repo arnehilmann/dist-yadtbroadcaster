@@ -86,7 +86,7 @@ forward_to_other([H|T], Node) ->
 forward_to_other(Message, _) ->
     io:format("refraining from forwarding message ~p~n", [Message]),
     ok.
-    
+
 
 handle_wamp(Data,#state{buffer=Buffer, enc=Enc, router=Router}=State) ->
     {Messages,NewBuffer} = erwa_protocol:deserialize(<<Buffer/binary, Data/binary>>,Enc),
