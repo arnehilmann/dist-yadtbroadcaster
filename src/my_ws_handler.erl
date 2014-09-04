@@ -45,20 +45,20 @@ websocket_init(_TransportName, Req, _Opts) ->
     end.
 
 websocket_handle({text, Data}, Req, #state{enc=json}=State) ->
-   {ok,NewState} = handle_wamp(Data,State),
-   {ok,Req,NewState};
+  {ok,NewState} = handle_wamp(Data,State),
+  {ok,Req,NewState};
 websocket_handle({text, Data}, Req, #state{enc=json_batched}=State) ->
-   {ok,NewState} = handle_wamp(Data,State),
-   {ok,Req,NewState};
+  {ok,NewState} = handle_wamp(Data,State),
+  {ok,Req,NewState};
 websocket_handle({binary, Data}, Req, #state{enc=msgpack}=State) ->
-   {ok,NewState} = handle_wamp(Data,State),
-   {ok,Req,NewState};
+  {ok,NewState} = handle_wamp(Data,State),
+  {ok,Req,NewState};
 websocket_handle({binary, Data}, Req, #state{enc=msgpack_batched}=State) ->
-   {ok,NewState} = handle_wamp(Data,State),
-   {ok,Req,NewState};
+  {ok,NewState} = handle_wamp(Data,State),
+  {ok,Req,NewState};
 websocket_handle(Data, Req, State) ->
-   io:format("error: unsupported Data ~p with encoding ~p~n",[Data,State#state.enc]),
-   {ok,Req,NewState}.
+  io:format("error: unsupported Data ~p with encoding ~p~n",[Data,State#state.enc]),
+  {ok, Req, State}.
 
 websocket_info({erwa,shutdown}, Req, State) ->
     {shutdown,Req,State};
