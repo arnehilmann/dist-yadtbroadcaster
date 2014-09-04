@@ -58,7 +58,7 @@ websocket_handle({binary, Data}, Req, #state{enc=msgpack_batched}=State) ->
    {ok,Req,NewState};
 websocket_handle(Data, Req, State) ->
    io:format("error: unsupported Data ~p with encoding ~p~n",[Data,State#state.enc]),
-   {ok,Req,NewState};
+   {ok,Req,NewState}.
 
 websocket_info({erwa,shutdown}, Req, State) ->
     {shutdown,Req,State};
