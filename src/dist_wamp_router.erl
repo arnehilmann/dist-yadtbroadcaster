@@ -65,17 +65,19 @@ read_peers() ->
                                 {ok, Peers}
     end.
 
+forward_to_local_routers([], _) ->
+    ok;
+forward_to_local_routers([Router|Rest], Data) ->
+    io:format("forwarding to local wamp router ~p~n", [Router]),
+    Router ! Data,
+    forward_to_local_routers(Rest, Data).
+
 listen_for_forwards() ->
     receive
         {From, Data} ->
             io:format("received data from ~p: ~p~n", [From, Data]),
-            WampRouter = whereis(erwa_router),
-            io:format("forwarding to local wamp router ~p~n", [WampRouter]),
-            if
-                WampRouter =/= undefined ->
-                    WampRouter ! Data;
-                true -> ok
-            end
+            Routers = gproc:lookup_pids({p, l, erwa_router}),
+            forward_to_local_routers(Routers, Data)
     end,
     listen_for_forwards().
 
