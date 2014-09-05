@@ -89,6 +89,8 @@ forward_to_other({publish, _, _, _, _, _}=Message, Node) ->
 forward_to_other([H|T], Node) ->
     forward_to_other(H, Node),
     forward_to_other(T, Node);
+forward_to_other([], _) ->
+    ok;
 forward_to_other(Message, _) ->
     io:format("refraining from forwarding message ~p~n", [Message]),
     ok.
