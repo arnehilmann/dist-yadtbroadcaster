@@ -67,9 +67,9 @@ read_peers() ->
 
 listen_for_forwards() ->
     receive
-        {From, Data} ->
-            io:format("received data from ~p: ~p~n", [From, Data]),
-            gproc:send({p, l, erwa_router}, Data)
+        {From, Realm, Data} ->
+            io:format("received data from ~p on realm ~p:~n~p~n", [From, Realm, Data]),
+            gproc:send({p, l, {router, Realm}}, Data)
     end,
     listen_for_forwards().
 

@@ -77,29 +77,38 @@ websocket_terminate(_Reason, _Req, _State) ->
     ok.
 
 
-forward_to_others(_, []) ->
+forward_to_others(_, _, undefined) ->
     ok;
-forward_to_others(Messages, [H|T]) ->
-    forward_to_other(Messages, H),
-    forward_to_others(Messages, T).
+forward_to_others(_, [], _) ->
+    ok;
+forward_to_others(Messages, [H|T], Realm) ->
+    forward_to_other(Messages, H, Realm),
+    forward_to_others(Messages, T, Realm).
 
-forward_to_other({publish, _, _, _, _, _}=Message, Node) ->
-    io:format("forwarding message ~p to ~p~n", [Message, Node]),
-    {forwards, Node} ! {self(), Message};
-forward_to_other([H|T], Node) ->
-    forward_to_other(H, Node),
-    forward_to_other(T, Node);
-forward_to_other([], _) ->
+forward_to_other({publish, _, _, _, _, _}=Message, Node, Realm) ->
+    io:format("forwarding message ~p to ~p on realm ~p~n", [Message, Node, Realm]),
+    {forwards, Node} ! {self(), Realm, Message};
+forward_to_other([H|T], Node, Realm) ->
+    forward_to_other(H, Node, Realm),
+    forward_to_other(T, Node, Realm);
+forward_to_other([], _, _) ->
     ok;
-forward_to_other(Message, _) ->
+forward_to_other(Message, _, _) ->
     io:format("refraining from forwarding message ~p~n", [Message]),
     ok.
 
 
+get_realm_of_router(undefined) ->
+    {ok, undefined};
+get_realm_of_router(Router) ->
+    Realm = gproc:get_value({p, l, {realm, Router}}),
+    {ok, Realm}.
+
 handle_wamp(Data,#state{buffer=Buffer, enc=Enc, router=Router}=State) ->
     {Messages,NewBuffer} = erwa_protocol:deserialize(<<Buffer/binary, Data/binary>>,Enc),
-    io:format("handling wamp messages: ~p~n", [Messages]),
-    ok = forward_to_others(Messages, nodes()),
+    {ok, Realm} = get_realm_of_router(Router),
+    io:format("handling wamp messages on realm ~p:~n ~p~n", [Realm, Messages]),
+    ok = forward_to_others(Messages, nodes(), Realm),
     {ok,NewRouter} = erwa_protocol:forward_messages(Messages,Router),
     {ok,State#state{router=NewRouter,buffer=NewBuffer}}.
 
