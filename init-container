@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e -E -u
+
+echo "starting application"
+cd /host-wd
+make
+_rel/dist_wamp_router/bin/dist_wamp_router start
+echo "application started"
