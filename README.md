@@ -25,3 +25,11 @@ publish something on that topic and watch that event appear on the other machine
 
 Also have a look at [the Wamp specification](http://wamp.ws/spec) for further
 informations on the possibilities.
+
+TODOS
+-----
+
+* disable ip checking when using ssh (annoying because the ip changes with every restart of a container)
+
+* configure localhost in /etc/resolv.conf permanently (read: resolvconf does _not_ remove 'localhost' as nameserver)
+
