@@ -59,7 +59,7 @@ ping_peers([H|T]) ->
 
 read_peers() ->
     case file:read_file("/host-wd/peers") of
-        {error, Reason} ->      io:format("cannot read peers file: ~p~n", [Reason]), 
+        {error, Reason} ->      io:format("cannot read peers file: ~p~n", [Reason]),
                                 {ok, []};
         {ok, FileContent} ->    Peers = string:tokens(binary_to_list(FileContent), ", \n"),
                                 {ok, Peers}
@@ -67,15 +67,9 @@ read_peers() ->
 
 listen_for_forwards() ->
     receive
-        {From, Data} ->
-            io:format("received data from ~p: ~p~n", [From, Data]),
-            WampRouter = whereis(erwa_router),
-            io:format("forwarding to local wamp router ~p~n", [WampRouter]),
-            if 
-                WampRouter =/= undefined ->
-                    WampRouter ! Data;
-                true -> ok
-            end
+        {From, Realm, Data} ->
+            io:format("received data from ~p on realm ~p:~n~p~n", [From, Realm, Data]),
+            gproc:send({p, l, {router, Realm}}, Data)
     end,
     listen_for_forwards().
 
