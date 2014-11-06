@@ -11,3 +11,4 @@ _rel
 ebin
 .*.v1
 logs
+tmp
