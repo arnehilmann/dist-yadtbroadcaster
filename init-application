@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e -E -u
 
-echo "starting application"
+echo "starting distributed wamp router"
 cd /docker
 make
 _rel/dist_wamp_router/bin/dist_wamp_router start
-echo "application started"
+echo "distributed wamp router started"
