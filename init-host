@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e -E -u
+
+IP=$(ip addr show eth0 | sed "/ inet /{s#/.*##;s#.* ##;p};d")
+echo $IP
+
+sed -i "/^[^#]/{s/127.0.0.1/$IP/g}" /etc/riak/riak.conf
