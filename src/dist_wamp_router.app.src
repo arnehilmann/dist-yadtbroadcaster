@@ -7,14 +7,17 @@
 	{registered, []},
 	{applications, [
 		kernel,
-    sasl,
+		sasl,
 		stdlib,
 		crypto,
-    ranch,
-    cowboy,
-    erwa
+		ranch,
+		cowboy,
+		erwa,
+		rhc,
+		ibrowse,
 
-     ,debugger, runtime_tools
+		debugger, 
+		runtime_tools
 	]},
 	{mod, {dist_wamp_router_app, []}},
 	{env, []}
