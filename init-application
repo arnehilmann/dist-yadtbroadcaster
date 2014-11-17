@@ -1,8 +1,11 @@
 #!/bin/bash
 set -e -E -u
 
-echo "starting distributed wamp router"
+echo "-preliminary config"
+git config --global url."https://".insteadOf git://
+
+echo "-starting distributed wamp router"
 cd /docker
 make
 _rel/dist_wamp_router/bin/dist_wamp_router start
-echo "distributed wamp router started"
+echo "--distributed wamp router started"
