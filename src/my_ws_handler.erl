@@ -90,11 +90,23 @@ inspect_messages([Message|Rest]) ->
     inspect_messages(Rest).
 
 inspect_message({publish, _, _, Topic, Payload, _}) ->
-    io:format("publish_event found on ~p with payload ~p~n", [Topic, Payload]);
+    io:format("publish_event found on ~p with the following payload:~n~p~n", [Topic, Payload]),
+    deep_inspect(Payload);
 inspect_message(Message) ->
     io:format("inspecting message:~n~p~n", [Message]),
     ok.
 
+deep_inspect([]) ->
+    ok;
+deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"service-change">>}, _, _]) ->
+    io:format("service changed:~n~p~n~n", [Payload]);
+deep_inspect([{<<"payload">>, _}, _, _, _, _]) ->
+    ok;
+deep_inspect([Payload|Rest]) ->
+    deep_inspect(Payload),
+    deep_inspect(Rest);
+deep_inspect(Payload) ->
+    io:format("deep inspection of:~n~p~n", [Payload]).
 -ifdef(TEST).
 
 
