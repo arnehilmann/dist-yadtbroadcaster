@@ -13,11 +13,12 @@
 		ranch,
 		cowboy,
 		erwa,
-		rhc,
-		ibrowse,
+        hackney,
 
-		debugger, 
+		debugger,
 		runtime_tools
+	]},
+	{included_applications, [
 	]},
 	{mod, {dist_wamp_router_app, []}},
 	{env, []}
