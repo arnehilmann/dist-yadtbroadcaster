@@ -80,8 +80,20 @@ websocket_terminate(_Reason, _Req, _State) ->
 handle_wamp(Data,#state{buffer=Buffer, enc=Enc, router=Router}=State) ->
     {Messages,NewBuffer} = erwa_protocol:deserialize(<<Buffer/binary, Data/binary>>,Enc),
     {ok,NewRouter} = erwa_protocol:forward_messages(Messages,Router),
+    ok = inspect_messages(Messages),
     {ok,State#state{router=NewRouter,buffer=NewBuffer}}.
 
+inspect_messages([]) ->
+    ok;
+inspect_messages([Message|Rest]) ->
+    inspect_message(Message),
+    inspect_messages(Rest).
+
+inspect_message({publish, _, _, Topic, Payload, _}) ->
+    io:format("publish_event found on ~p with payload ~p~n", [Topic, Payload]);
+inspect_message(Message) ->
+    io:format("inspecting message:~n~p~n", [Message]),
+    ok.
 
 -ifdef(TEST).
 
