@@ -8,10 +8,10 @@ set -e -E -u
 
 
 CONFIGFILE=/etc/sysconfig/dist-wamp-router
-UID=dist-wamp-router
+USER=dist-wamp-router
 [[ -r $CONFIGFILE ]] && source $CONFIGFILE
 PROGRAM=/opt/dist-wamp-router/dist_wamp_router/bin/dist_wamp_router
-LAUNCHER="runuser -l $uid -c $PROGRAM"
+LAUNCHER="runuser -l $USER -c $PROGRAM"
 
 case "${1:-}" in
     start)
