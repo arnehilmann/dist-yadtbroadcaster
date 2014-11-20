@@ -28,7 +28,7 @@ informations on the possibilities.
 
 Packaging
 ---------
-* Run `make` requires a recent erlang
+* Run `make` requires a recent erlang. We suggest downloading it from [here](https://www.erlang-solutions.com/downloads/download-erlang-otp)
 * Ensure you have `rebar` and `relx` installed and in your path.
   If not:
   ```bash
@@ -39,7 +39,7 @@ Packaging
 
   export PATH=$PATH:$(pwd)
   ```
-* Build an RPM with `./build_rpm_with_fpm.sh` this requires fpm (`gem install fpm`).
+* Build an RPM with `./build_rpm_with_fpm.sh` this requires [fpm](https://github.com/jordansissel/fpm) (`gem install fpm`).
 
 Configuration
 -------------
