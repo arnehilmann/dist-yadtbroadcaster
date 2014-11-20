@@ -8,3 +8,4 @@ FQDN=$HOSTNAME.node.consul
 sed -i "/^nodename/{s/127.0.0.1/$FQDN/g};/^[^#]/{s/127.0.0.1/0.0.0.0/g}" /etc/riak/riak.conf
 
 service riak restart
+riak-admin bucket-type update yadt '{"props":{"allow_mult":false,"last_write_wins":true}}'
