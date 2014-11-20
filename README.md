@@ -48,6 +48,21 @@ Configuration
   USER=username-to-run-as
   ```
 
+Run in docker
+-------------
+```bash
+git clone https://github.com/arnehilmann/baseimage
+export DOCKER_IMAGE=arne/erlang
+baseimage/start-dns
+baseimage/start-node 1
+baseimage/start-node 2
+[...]
+ssh node1.node.consul
+cd /docker
+_rel/dist_wamp_router/bin/dist_wamp_router attach
+```
+
+
 TODOS
 -----
 
