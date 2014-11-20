@@ -11,13 +11,14 @@ CONFIGFILE=/etc/sysconfig/dist-wamp-router
 USER=dist-wamp-router
 [[ -r $CONFIGFILE ]] && source $CONFIGFILE
 PROGRAM=/opt/dist-wamp-router/dist_wamp_router/bin/dist_wamp_router
+SHORT_PROGRAM=$(basename $PROGRAM)
 
 case "${1:-}" in
     start)
         if $0 status; then
-            echo "$0 already running";
+            echo "$SHORT_PROGRAM already running";
         else
-            echo "Starting $0";
+            echo "Starting $SHORT_PROGRAM";
             runuser -l $USER -c "$PROGRAM start";
        fi
     ;;
@@ -25,11 +26,11 @@ case "${1:-}" in
         if $0 status; then
             runuser -l $USER -c "$PROGRAM stop";
         else
-            echo "$0 already stopped";
+            echo "$SHORT_PROGRAM already stopped";
         fi
     ;;
     status)
-        echo 'Pinging the dist-wamp-router, expect "pong"'
+        echo "Pinging $SHORT_PROGRAM, expect 'pong'"
         runuser -l $USER -c "$PROGRAM ping"
     ;;
     restart)
