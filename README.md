@@ -26,6 +26,28 @@ publish something on that topic and watch that event appear on the other machine
 Also have a look at [the Wamp specification](http://wamp.ws/spec) for further
 informations on the possibilities.
 
+Packaging
+---------
+* Run `make` requires a recent erlang
+* Ensure you have `rebar` and `relx` installed and in your path.
+  If not:
+  ```bash
+  wget https://raw.githubusercontent.com/wiki/rebar/rebar/rebar
+  chmod +x rebar
+  wget https://github.com/erlware/relx/releases/download/v1.0.2/relx
+  chmod +x relx
+
+  export PATH=$PATH:$(pwd)
+  ```
+* Build an RPM with `./build_rpm_with_fpm.sh` this requires fpm (`gem install fpm`).
+
+Configuration
+-------------
+* `/etc/sysconfig/dist-wamp-router`
+  ```bash
+  USER=username-to-run-as
+  ```
+
 TODOS
 -----
 
