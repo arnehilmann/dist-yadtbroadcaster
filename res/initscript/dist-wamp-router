@@ -30,8 +30,11 @@ case "${1:-}" in
         fi
     ;;
     status)
-        echo "Pinging $SHORT_PROGRAM, expect 'pong'"
-        runuser -l $USER -c "$PROGRAM ping"
+        if runuser -l $USER -c "$PROGRAM ping"; then
+            exit 0;
+        else
+            exit 3;
+        fi
     ;;
     restart)
         runuser -l $USER -c "$PROGRAM restart"
