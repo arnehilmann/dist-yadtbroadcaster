@@ -15,6 +15,8 @@
 -define(WSMSGPACK_BATCHED,<<"wamp.2.msgpack.batched">>).
 -define(WSJSON_BATCHED,<<"wamp.2.json.batched">>).
 
+-define(RIAK_URL,<<"http://localhost:8098/types/yadt/buckets/service/keys/">>).
+
 -record(state,{
           enc = undefined,
           router = undefined,
@@ -89,24 +91,46 @@ inspect_messages([Message|Rest]) ->
     inspect_message(Message),
     inspect_messages(Rest).
 
-inspect_message({publish, _, _, Topic, Payload, _}) ->
-    io:format("publish_event found on ~p with the following payload:~n~p~n", [Topic, Payload]),
+inspect_message({publish, _, _, _Topic, Payload, _}) ->
+    %io:format("publish_event found on ~p with the following payload:~n~p~n", [Topic, Payload]),
     deep_inspect(Payload);
-inspect_message(Message) ->
-    io:format("inspecting message:~n~p~n", [Message]),
+inspect_message(_Message) ->
+    %io:format("inspecting message:~n~p~n", [Message]),
     ok.
+
+store_service_state(Service, State) ->
+    Url = binary_to_list(?RIAK_URL) ++ binary_to_list(Service),
+    io:format("url: ~s -> ~s~n", [Url, State]),
+    {ok, StatusCode, _RespHeaders, _ClientRef} = hackney:put(Url, [{<<"Content-Type">>, <<"text/plain">>}], State, []),
+    io:format("status of store: ~p~n", [StatusCode]),
+    ok.
+
+%fetch_service_state(Service) ->
+%    Url = binary_to_list(?RIAK_URL) ++ binary_to_list(Service),
+%    io:format("url?: ~s~n", [Url]),
+%    {ok, StatusCode, RespHeaders, ClientRef} = hackney:get(Url, [{<<"Content-Type">>, <<"text/plain">>}], <<>>, []),
+%    io:format("status: ~p~n", [StatusCode]),
+%    io:format("headers: ~p~n", [RespHeaders]),
+%    Body = hackney:body(ClientRef),
+%    io:format("body: ~p~n", [Body]),
+%    ok.
 
 deep_inspect([]) ->
     ok;
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"service-change">>}, _, _]) ->
-    io:format("service changed:~n~p~n~n", [Payload]);
+    [{Service, State}] = Payload,
+    ok = store_service_state(Service, State),
+    io:format("~s is ~s~n", [Service, State]);
+deep_inspect([{<<"payload">>, _Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"full-update">>}, _, {<<"target">>, Topic}]) ->
+    io:format("full update received of ~s~n", [Topic]);
 deep_inspect([{<<"payload">>, _}, _, _, _, _]) ->
     ok;
 deep_inspect([Payload|Rest]) ->
     deep_inspect(Payload),
     deep_inspect(Rest);
-deep_inspect(Payload) ->
-    io:format("deep inspection of:~n~p~n", [Payload]).
+deep_inspect(_) ->
+    ok.
+
 -ifdef(TEST).
 
 
