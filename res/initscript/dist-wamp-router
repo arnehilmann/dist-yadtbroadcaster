@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# chkconfig: 2345 56 26
+# Description: init script for the dist-wamp-router
+#
+
+set -e -E -u
+
+PROGRAM=/opt/dist-wamp-router/dist_wamp_router/bin/dist_wamp_router
+
+case "${1:-}" in
+    start)
+        if $0 status; then
+            echo "$0 already running";
+        else
+            echo "Starting $0";
+            $PROGRAM start;
+       fi
+    ;;
+    stop)
+        if $0 status; then
+            $PROGRAM stop;
+        else
+            echo "$0 already stopped";
+        fi
+    ;;
+    status)
+        echo 'Pinging the dist-wamp-router, expect "pong"'
+        $PROGRAM ping
+    ;;
+    restart)
+        $PROGRAM restart
+    ;;
+    *)
+        echo "Usage: $0 {start|stop|status|restart}" >&2 && exit 3
+    ;;
+esac
