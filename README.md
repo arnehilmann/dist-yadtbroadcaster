@@ -52,7 +52,7 @@ Run in docker
 -------------
 ```bash
 git clone https://github.com/arnehilmann/baseimage
-export DOCKER_IMAGE=arne/erlang
+export DOCKER_IMAGE=arne/riak
 baseimage/start-dns
 baseimage/start-node 1
 baseimage/start-node 2
