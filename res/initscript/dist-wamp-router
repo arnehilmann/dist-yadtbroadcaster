@@ -6,7 +6,12 @@
 
 set -e -E -u
 
+
+CONFIGFILE=/etc/sysconfig/dist-wamp-router
+UID=dist-wamp-router
+[[ -r $CONFIGFILE ]] && source $CONFIGFILE
 PROGRAM=/opt/dist-wamp-router/dist_wamp_router/bin/dist_wamp_router
+LAUNCHER="runuser -l $uid -c $PROGRAM"
 
 case "${1:-}" in
     start)
@@ -14,22 +19,22 @@ case "${1:-}" in
             echo "$0 already running";
         else
             echo "Starting $0";
-            $PROGRAM start;
+            $LAUNCHER start;
        fi
     ;;
     stop)
         if $0 status; then
-            $PROGRAM stop;
+            $LAUNCHER stop;
         else
             echo "$0 already stopped";
         fi
     ;;
     status)
         echo 'Pinging the dist-wamp-router, expect "pong"'
-        $PROGRAM ping
+        $LAUNCHER ping
     ;;
     restart)
-        $PROGRAM restart
+        $LAUNCHER restart
     ;;
     *)
         echo "Usage: $0 {start|stop|status|restart}" >&2 && exit 3
