@@ -3,7 +3,7 @@
 	{id, "dist_wamp_router"},
 	{description, "a distributed wamp router"},
 	{vsn, "0.0.1"},
-	{modules, []},
+	{modules, [state_store]},
 	{registered, []},
 	{applications, [
 		kernel,
@@ -14,7 +14,6 @@
 		cowboy,
 		erwa,
         hackney,
-
 		debugger,
 		runtime_tools
 	]},

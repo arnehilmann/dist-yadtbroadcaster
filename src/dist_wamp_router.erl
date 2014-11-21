@@ -33,6 +33,9 @@ init([]) ->
     {ok, _} = cowboy:start_http(http, 100, [{port, 8080}],[{env, [{dispatch, Dispatch}]}]),
     {ok, _} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
 
+    {ok, _} = state_store:start_link(),
+    state_store:store(["yadt", "bar", "baz"], "UNKNOWN"),
+
     ForwardListener = erlang:spawn_link(?MODULE, listen_for_forwards, []),
     register(forwards, ForwardListener),
 
