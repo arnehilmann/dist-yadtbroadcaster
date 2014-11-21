@@ -1,0 +1,4 @@
+services:
+  dist-wamp-router:
+      needs_services: ["riak"]
+  riak:
