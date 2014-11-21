@@ -3,7 +3,9 @@
 # the prelinker causes problem with RPM cpio digests
 # so we undo its work with `prelink -u` here
 prelink -u _rel/dist_wamp_router/erts-*/bin/*
-MINOR_VERSION=${1:?no MINOR_VERSION specified}
+
+
+MINOR_VERSION=${1:?no MINOR_VERSION specified, usage is $0 MINOR_VERSION}
 
 cp -r _rel dist-wamp-router
 
