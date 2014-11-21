@@ -1,6 +1,6 @@
 #!/bin/bash
 
-prelink -u _rel/dist_wamp_router/erts-*/bin/beam
+prelink -u _rel/dist_wamp_router/erts-*/bin/*
 MINOR_VERSION=${1:?no MINOR_VERSION specified}
 
 cp -r _rel dist-wamp-router
