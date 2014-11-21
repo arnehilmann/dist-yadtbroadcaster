@@ -53,10 +53,8 @@ init([]) ->
 ping_peers([]) ->
     ok;
 ping_peers([H|T]) ->
-    io:format('host to ping: ~p~n', [H]),
-    io:format('remaining hosts: ~p~n~n', [T]),
     NodeName = list_to_atom(atom_to_list(erlang:get_cookie()) ++ "@" ++ H),
-    io:format('node to ping: ~p~n', [NodeName]),
+    io:format('pinging node ~s~n', [NodeName]),
     net_adm:ping(NodeName),
     ping_peers(T).
 
