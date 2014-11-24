@@ -1,4 +1,3 @@
 services:
   dist-wamp-router:
-      needs_services: ["riak"]
-  riak:
+    needs_services: ["is24-riak"]
