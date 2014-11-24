@@ -59,7 +59,7 @@ ping_peers([H|T]) ->
     ping_peers(T).
 
 read_peers() ->
-    case file:read_file("/docker/peers") of
+    case file:read_file("/etc/sysconfig/dist-wamp-router.nodes") of
         {error, Reason} ->      io:format("cannot read peers file: ~p~n", [Reason]),
                                 {ok, []};
         {ok, FileContent} ->    Peers = string:tokens(binary_to_list(FileContent), ", \n"),
