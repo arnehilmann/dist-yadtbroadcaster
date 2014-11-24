@@ -1,3 +1,4 @@
 services:
   dist-wamp-router:
+    status_max_tries: 5
     needs_services: ["is24-riak"]
