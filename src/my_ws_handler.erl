@@ -117,7 +117,7 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
     io:format("Artefact states : ~n~p~n", [Artefacts]);
 deep_inspect([services, [Service|Rest]]) ->
     [{<<"state">>,State}, {<<"uri">>,Uri}, {<<"name">>,_}] = Service,
-    io:format("Storing service state ~n~p~n", [Uri]),
+    io:format("Storing service state for ~p~n", [Uri]),
     ok = state_store:store(["yadt", "service", Uri], State),
     deep_inspect([services, Rest]);
 deep_inspect([{<<"payload">>, Payload}, _, _, _, _]) ->
