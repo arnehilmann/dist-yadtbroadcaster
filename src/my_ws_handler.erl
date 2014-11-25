@@ -116,9 +116,9 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
     deep_inspect([services, Services]),
     io:format("Artefact states : ~n~p~n", [Artefacts]);
 deep_inspect([services, [Service|Rest]]) ->
-    [{<<"state">>,State}, {<<"uri">>,Uri}, {<<"name">>,_}] = Service,
+    [{<<"state">>,State}, {<<"uri">>,Uri}, {<<"name">>,Name}] = Service,
     io:format("Storing service state for ~p~n", [Uri]),
-    ok = state_store:store(["yadt", "service", Uri], State),
+    ok = state_store:store(["yadt", "service", Name], State), % FIXME: can't use just the name as key, maybe /host/servicename?
     deep_inspect([services, Rest]);
 deep_inspect([{<<"payload">>, Payload}, _, _, _, _]) ->
     io:format("unknown payload: ~n~p~n", [Payload]);
