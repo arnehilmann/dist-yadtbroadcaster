@@ -100,8 +100,10 @@ deep_inspect([]) ->
     ok;
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"service-change">>}, _, _]) ->
     [[{<<"state">>,State},{<<"uri">>,Uri}]] = Payload,
-    ok = state_store:store(["yadt", "service", Uri], State),
-    io:format("~s is ~s~n", [Uri, State]); % FIXME uri is not a valid key due to / and :// tokens
+    [_, HostAndService] = binary:split(Uri,<<"://">>), % TODO move this to uri parsing module?
+    [Host, ServiceName] = binary:split(HostAndService,<<"/">>),
+    ok = state_store:store(["yadt", "service", ServiceName], State), % FIXME: think of some way to use host+service as key
+    io:format("Service ~s on ~s is ~s~n", [ServiceName, Host, State]);
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"full-update">>}, _, {<<"target">>, Topic}]) ->
     io:format("full update received of ~s~n", [Topic]),
     [
@@ -118,7 +120,7 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
 deep_inspect([services, [Service|Rest]]) ->
     [{<<"state">>,State}, {<<"uri">>,Uri}, {<<"name">>,Name}] = Service,
     io:format("Storing service state for ~p~n", [Uri]),
-    ok = state_store:store(["yadt", "service", Name], State), % FIXME: can't use just the name as key, maybe /host/servicename?
+    ok = state_store:store(["yadt", "service", Name], State), % FIXME: think of some way to use host+service as key
     deep_inspect([services, Rest]);
 deep_inspect([{<<"payload">>, Payload}, _, _, _, _]) ->
     io:format("unknown payload: ~n~p~n", [Payload]);
