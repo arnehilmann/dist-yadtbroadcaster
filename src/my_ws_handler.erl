@@ -102,10 +102,24 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
     [{Service, State}] = Payload,
     ok = state_store:store(["yadt", "service", Service], State), %store_service_state(Service, State),
     io:format("~s is ~s~n", [Service, State]);
-deep_inspect([{<<"payload">>, _Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"full-update">>}, _, {<<"target">>, Topic}]) ->
-    io:format("full update received of ~s~n", [Topic]);
-deep_inspect([{<<"payload">>, _}, _, _, _, _]) ->
-    ok;
+deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"full-update">>}, _, {<<"target">>, Topic}]) ->
+    io:format("full update received of ~s~n", [Topic]),
+    [
+      [
+        [
+          {<<"services">>,Services},
+          {<<"artefacts">>,Artefacts},
+          {<<"name">>,_}
+        ]
+      ]
+    ] = Payload,
+    deep_inspect([services, Services]),
+    io:format("Artefact states : ~n~p~n", [Artefacts]);
+deep_inspect([services, [Service|Rest]]) ->
+    io:format("Inspecting service state tuple ~n~p~n", [Service]),
+    deep_inspect([services, Rest]);
+deep_inspect([{<<"payload">>, Payload}, _, _, _, _]) ->
+    io:format("unknown payload: ~n~p~n", [Payload]);
 deep_inspect([Payload|Rest]) ->
     deep_inspect(Payload),
     deep_inspect(Rest);
