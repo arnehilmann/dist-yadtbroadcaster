@@ -116,12 +116,17 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
       ]
     ] = Payload,
     deep_inspect([services, Services]),
-    io:format("Artefact states : ~n~p~n", [Artefacts]);
+    deep_inspect([artefacts, Artefacts]);
 deep_inspect([services, [Service|Rest]]) ->
     [{<<"state">>,State}, {<<"uri">>,Uri}, {<<"name">>,Name}] = Service,
     io:format("Storing service state for ~p~n", [Uri]),
     ok = state_store:store(["yadt", "service", Name], State), % FIXME: think of some way to use host+service as key
     deep_inspect([services, Rest]);
+deep_inspect([artefacts, [Artefact|Rest]]) ->
+    [{<<"current">>,Version},
+     {<<"uri">>,Uri},
+     {<<"name">>,Name}] = Artefact,
+    io:format("~p in version ~p~n", [Name, Version]);
 deep_inspect([{<<"payload">>, Payload}, _, _, _, _]) ->
     io:format("unknown payload: ~n~p~n", [Payload]);
 deep_inspect([Payload|Rest]) ->
