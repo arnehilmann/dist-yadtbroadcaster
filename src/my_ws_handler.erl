@@ -99,9 +99,9 @@ inspect_message(_Message) ->
 deep_inspect([]) ->
     ok;
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"service-change">>}, _, _]) ->
-    [{Service, State}] = Payload,
-    ok = state_store:store(["yadt", "service", Service], State), %store_service_state(Service, State),
-    io:format("~s is ~s~n", [Service, State]);
+    [[{<<"state">>,State},{<<"uri">>,Uri}]] = Payload,
+    ok = state_store:store(["yadt", "service", Uri], State),
+    io:format("~s is ~s~n", [Uri, State]); % FIXME uri is not a valid key due to / and :// tokens
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"full-update">>}, _, {<<"target">>, Topic}]) ->
     io:format("full update received of ~s~n", [Topic]),
     [
