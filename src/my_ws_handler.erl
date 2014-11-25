@@ -100,10 +100,9 @@ deep_inspect([]) ->
     ok;
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"service-change">>}, _, _]) ->
     [[{<<"state">>,State},{<<"uri">>,Uri}]] = Payload,
-    [_, HostAndService] = binary:split(Uri,<<"://">>), % TODO move this to uri parsing module?
-    [Host, ServiceName] = binary:split(HostAndService,<<"/">>),
-    ok = state_store:store(["yadt", "service", ServiceName], State), % FIXME: think of some way to use host+service as key
-    io:format("Service ~s on ~s is ~s~n", [ServiceName, Host, State]);
+    [_, Hostname, Name] = uri_parse(Uri),
+    ok = state_store:store(["yadt", "service", Name], State), % FIXME: think of some way to use host+service as key
+    io:format("Service ~s on ~s is ~s (service-chance)~n", [Name, Hostname, State]);
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"full-update">>}, _, {<<"target">>, Topic}]) ->
     io:format("full update received of ~s~n", [Topic]),
     [
@@ -119,14 +118,17 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
     deep_inspect([artefacts, Artefacts]);
 deep_inspect([services, [Service|Rest]]) ->
     [{<<"state">>,State}, {<<"uri">>,Uri}, {<<"name">>,Name}] = Service,
-    io:format("Storing service state for ~p~n", [Uri]),
+    [_, Hostname, _] = uri_parse(Uri),
     ok = state_store:store(["yadt", "service", Name], State), % FIXME: think of some way to use host+service as key
+    io:format("Service ~s on ~s is ~s (full-update)~n", [Name, Hostname, State]),
     deep_inspect([services, Rest]);
 deep_inspect([artefacts, [Artefact|Rest]]) ->
     [{<<"current">>,Version},
      {<<"uri">>,Uri},
      {<<"name">>,Name}] = Artefact,
-    io:format("~p in version ~p~n", [Name, Version]);
+    [_, Hostname, _] = uri_parse(Uri),
+    io:format("Artefact ~p on ~p in version ~p~n", [Name, Hostname, Version]),
+    deep_inspect([artefacts, Rest]);
 deep_inspect([{<<"payload">>, Payload}, _, _, _, _]) ->
     io:format("unknown payload: ~n~p~n", [Payload]);
 deep_inspect([Payload|Rest]) ->
@@ -134,6 +136,12 @@ deep_inspect([Payload|Rest]) ->
     deep_inspect(Rest);
 deep_inspect(_) ->
     ok.
+
+uri_parse(Uri) ->
+    [Type, HostnameAndName] = binary:split(Uri,<<"://">>),
+    [Hostname, Name] = binary:split(HostnameAndName,<<"/">>),
+    [Type, Hostname, Name].
+
 
 -ifdef(TEST).
 
