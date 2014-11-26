@@ -96,45 +96,57 @@ inspect_message(_Message) ->
     %io:format("inspecting message:~n~p~n", [Message]),
     ok.
 
-deep_inspect([]) ->
-    ok;
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"service-change">>}, _, _]) ->
     [[{<<"state">>,State},{<<"uri">>,Uri}]] = Payload,
     [_, Hostname, Name] = uri_parse(Uri),
-    ok = state_store:store(["yadt", "service", Name], State), % FIXME: think of some way to use host+service as key
+    ok = state_store:store(["services", Hostname, Name], State),
     io:format("Service ~s on ~s is ~s (service-chance)~n", [Name, Hostname, State]);
+
+deep_inspect([
+              {<<"services">>, Services},
+              {<<"artefacts">>, Artefacts},
+              {<<"name">>, Hostname}
+             ]) ->
+    io:format("host ~p found~n", [Hostname]),
+    store_services_of_host(Hostname, Services),
+    deep_inspect_services(Services);
+
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"full-update">>}, _, {<<"target">>, Topic}]) ->
     io:format("full update received of ~s~n", [Topic]),
-    [
-      [
-        [
-          {<<"services">>,Services},
-          {<<"artefacts">>,Artefacts},
-          {<<"name">>,_}
-        ]
-      ]
-    ] = Payload,
-    deep_inspect([services, Services]),
-    deep_inspect([artefacts, Artefacts]);
-deep_inspect([services, [Service|Rest]]) ->
+    store_hosts_of_target(Topic, Payload),
+    deep_inspect(Payload);
+
+deep_inspect([{<<"payload">>, Payload}, _, _, _, _]) ->
+    io:format("unknown payload: ~n~p~n", [Payload]);
+deep_inspect([Payload|Rest]) ->
+    io:format("recursing in ~p~n", [Payload]),
+    deep_inspect(Payload),
+    deep_inspect(Rest);
+deep_inspect(_) ->
+    ok.
+
+deep_inspect_services([]) ->
+    ok;
+deep_inspect_services([Service|Rest]) ->
     [{<<"state">>,State}, {<<"uri">>,Uri}, {<<"name">>,Name}] = Service,
     [_, Hostname, _] = uri_parse(Uri),
-    ok = state_store:store(["yadt", "service", Name], State), % FIXME: think of some way to use host+service as key
+    ok = state_store:store(["services", Hostname, Name], State),
     io:format("Service ~s on ~s is ~s (full-update)~n", [Name, Hostname, State]),
-    deep_inspect([services, Rest]);
-deep_inspect([artefacts, [Artefact|Rest]]) ->
+    deep_inspect_services(Rest).
+
+deep_inspect_artefacts([Artefact|Rest]) ->
     [{<<"current">>,Version},
      {<<"uri">>,Uri},
      {<<"name">>,Name}] = Artefact,
     [_, Hostname, _] = uri_parse(Uri),
     io:format("Artefact ~p on ~p in version ~p~n", [Name, Hostname, Version]),
-    deep_inspect([artefacts, Rest]);
-deep_inspect([{<<"payload">>, Payload}, _, _, _, _]) ->
-    io:format("unknown payload: ~n~p~n", [Payload]);
-deep_inspect([Payload|Rest]) ->
-    deep_inspect(Payload),
-    deep_inspect(Rest);
-deep_inspect(_) ->
+    deep_inspect_artefacts(Rest).
+
+store_services_of_host(Hostname, Services) ->
+    io:format("trying to store services for ~s~n~p~n", [Hostname, Services]),
+    ok.
+
+store_hosts_of_target(Topic, Payload) ->
     ok.
 
 uri_parse(Uri) ->
