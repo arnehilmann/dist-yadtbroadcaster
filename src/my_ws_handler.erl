@@ -109,6 +109,7 @@ deep_inspect([
              ]) ->
     io:format("host ~p found~n", [Hostname]),
     store_services_of_host(Hostname, Services),
+    store_artefacts_of_host(Hostname, Artefacts),
     deep_inspect_services(Services);
 
 deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"full-update">>}, _, {<<"target">>, Topic}]) ->
@@ -150,6 +151,12 @@ store_services_of_host(Hostname, Services) ->
     ServiceNamesString = string:join(ServiceNames, "\n"),
     io:format("service names string: ~p~n", [ServiceNamesString]),
     state_store:store(["hosts", Hostname, "services"], ServiceNamesString).
+
+store_artefacts_of_host(Hostname, Artefacts) ->
+    io:format("storing artefacts of ~p:~n~p~n", [Hostname, Artefacts]),
+    ArtefactsNames = string:join(lists:map(fun([{<<"current">>, Version}, _, {<<"name">>, Name}]) -> binary:bin_to_list(Name) ++ " " ++ binary:bin_to_list(Version) end, Artefacts), "\n"),
+    io:format("artefact names: ~p~n", [ArtefactsNames]),
+    state_store:store(["hosts", Hostname, "artefacts"], ArtefactsNames).
 
 store_hosts_of_target(Topic, Payload) ->
     HostNames = lists:map(
