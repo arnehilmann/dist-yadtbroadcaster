@@ -26,7 +26,12 @@ handle_cast({store, Where, What}, State) ->
     {ok, StatusCode, _RespHeaders, _ClientRef} = hackney:put(
         Url, [{<<"Content-Type">>, <<"text/plain">>}], What, []
     ),
-    io:format("status of store: ~p~n", [StatusCode]),
+    if
+        StatusCode >= 300 ->
+            io:format("status of store: ~p~n", [StatusCode]);
+        true ->
+            ok
+    end,
     {noreply, State};
 handle_cast(Args, State) ->
     io:format("something went wrong here: ~p~n~p~n", [Args, State]),
