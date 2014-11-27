@@ -152,7 +152,13 @@ store_services_of_host(Hostname, Services) ->
     state_store:store(["hosts", Hostname, "services"], ServiceNamesString).
 
 store_hosts_of_target(Topic, Payload) ->
-    ok.
+    HostNames = lists:map(
+                     fun({<<"name">>, Value}) -> binary:bin_to_list(Value) end,
+                     lists:filter(fun({Key, _}) -> Key == <<"name">> end, lists:flatten(Payload))
+                    ),
+    HostNamesString = string:join(HostNames, "\n"),
+    io:format("service names string: ~p~n", [HostNamesString]),
+    state_store:store(["targets", Topic, "hosts"], HostNamesString).
 
 uri_parse(Uri) ->
     [Type, HostnameAndName] = binary:split(Uri,<<"://">>),
