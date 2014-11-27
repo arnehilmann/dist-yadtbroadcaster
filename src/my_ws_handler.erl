@@ -143,8 +143,13 @@ deep_inspect_artefacts([Artefact|Rest]) ->
     deep_inspect_artefacts(Rest).
 
 store_services_of_host(Hostname, Services) ->
-    io:format("trying to store services for ~s~n~p~n", [Hostname, Services]),
-    ok.
+    ServiceNames = lists:map(
+                     fun({<<"name">>, Value}) -> binary:bin_to_list(Value) end,
+                     lists:filter(fun({Key, _}) -> Key == <<"name">> end, lists:flatten(Services))
+                    ),
+    ServiceNamesString = string:join(ServiceNames, "\n"),
+    io:format("service names string: ~p~n", [ServiceNamesString]),
+    state_store:store(["hosts", Hostname, "services"], ServiceNamesString).
 
 store_hosts_of_target(Topic, Payload) ->
     ok.
