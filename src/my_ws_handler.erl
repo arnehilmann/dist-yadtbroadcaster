@@ -135,12 +135,18 @@ deep_inspect_services([Service|Rest]) ->
     io:format("Service ~s on ~s is ~s (full-update)~n", [Name, Hostname, State]),
     deep_inspect_services(Rest).
 
-store_services_of_host(Hostname, Services) ->
-    ServiceNames = lists:map(
-                     fun({<<"name">>, Value}) -> binary:bin_to_list(Value) end,
-                     lists:filter(fun({Key, _}) -> Key == <<"name">> end, lists:flatten(Services))
+flatten_and_join_map(Lists, SearchKey, Separator) ->
+    Results = lists:map(
+                     fun({_, Value}) -> binary:bin_to_list(Value) end,
+                     lists:filter(fun({Key, _}) -> Key == SearchKey end, lists:flatten(Lists))
                     ),
-    ServiceNamesString = string:join(ServiceNames, "\n"),
+    string:join(Results, Separator).
+
+flatten_and_join_names(Lists) ->
+    flatten_and_join_map(Lists, <<"name">>, "\n").
+
+store_services_of_host(Hostname, Services) ->
+    ServiceNamesString = flatten_and_join_names(Services),
     io:format("service names string: ~p~n", [ServiceNamesString]),
     state_store:store(["hosts", Hostname, "services"], ServiceNamesString).
 
@@ -151,11 +157,7 @@ store_artefacts_of_host(Hostname, Artefacts) ->
     state_store:store(["hosts", Hostname, "artefacts"], ArtefactsNames).
 
 store_hosts_of_target(Topic, Payload) ->
-    HostNames = lists:map(
-                     fun({<<"name">>, Value}) -> binary:bin_to_list(Value) end,
-                     lists:filter(fun({Key, _}) -> Key == <<"name">> end, lists:flatten(Payload))
-                    ),
-    HostNamesString = string:join(HostNames, "\n"),
+    HostNamesString = flatten_and_join_names(Payload),
     io:format("service names string: ~p~n", [HostNamesString]),
     state_store:store(["targets", Topic, "hosts"], HostNamesString).
 
