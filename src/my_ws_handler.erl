@@ -135,14 +135,6 @@ deep_inspect_services([Service|Rest]) ->
     io:format("Service ~s on ~s is ~s (full-update)~n", [Name, Hostname, State]),
     deep_inspect_services(Rest).
 
-deep_inspect_artefacts([Artefact|Rest]) ->
-    [{<<"current">>,Version},
-     {<<"uri">>,Uri},
-     {<<"name">>,Name}] = Artefact,
-    [_, Hostname, _] = uri_parse(Uri),
-    io:format("Artefact ~p on ~p in version ~p~n", [Name, Hostname, Version]),
-    deep_inspect_artefacts(Rest).
-
 store_services_of_host(Hostname, Services) ->
     ServiceNames = lists:map(
                      fun({<<"name">>, Value}) -> binary:bin_to_list(Value) end,
