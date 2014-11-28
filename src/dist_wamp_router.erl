@@ -26,8 +26,9 @@ init([]) ->
     Dispatch = cowboy_router:compile([
                                       {'_', [
                                              {"/", cowboy_static, {priv_file, dist_wamp_router, "index.html"}},
-                                             {"/wamp", my_ws_handler, []},
-                                             {"/static/[...]", cowboy_static, {priv_dir, dist_wamp_router, "static"}}
+                                             {"/target-status", cowboy_static, {priv_file, dist_wamp_router, "target-status.html"}},
+                                             {"/static/[...]", cowboy_static, {priv_dir, dist_wamp_router, "static"}},
+                                             {"/wamp", my_ws_handler, []}
                                             ]}
                                      ]),
     {ok, _} = cowboy:start_http(http, 100, [{port, 8080}],[{env, [{dispatch, Dispatch}]}]),
