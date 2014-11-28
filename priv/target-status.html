@@ -1,12 +1,12 @@
 <html>
   <head>
+    <link type="text/css" rel="stylesheet" href="yadt.css"></link>
     <style>
       .fa-exclamation-triangle { color: red; }
       .fa-check-circle { color: green; }
     </style>
-    <link rel="stylesheet" href="/static/font-awesome-4.2.0/css/font-awesome.min.css">
-    <script src="/static/jquery.min.js"></script>
-    <script src="http://node1.node.consul:8098/types/targets/buckets/foo/keys/hosts"></script>
+    <script src="jquery.min.js"></script>
+    <script src="d3.min.js"></script>
     <script>
       $.extend({
           getUrlVars: function(){
@@ -24,75 +24,55 @@
           }
       });
     </script>
-    <script>
-var $jsonp = (function(){
-  var that = {};
-
-  that.send = function(src, options) {
-    var callback_name = options.callbackName || 'callback',
-      on_success = options.onSuccess || function(){},
-      on_timeout = options.onTimeout || function(){},
-      timeout = options.timeout || 10; // sec
-
-    var timeout_trigger = window.setTimeout(function(){
-      window[callback_name] = function(){};
-      on_timeout();
-    }, timeout * 1000);
-
-    window[callback_name] = function(data){
-      window.clearTimeout(timeout_trigger);
-      on_success(data);
-    }
-
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-    script.src = src;
-
-    document.getElementsByTagName('head')[0].appendChild(script);
-  }
-
-  return that;
-})();
-    </script>
   </head>
   <body>
-  <h3>TADAHHHHHHHHHHHHHHHHH</h3>
-    <i class="fa fa-exclamation-triangle fa-4x fa-fw"></i>
-    <i class="fa fa-check-circle fa-4x fa-fw"></i>
+  <h1>Target <span class="targetname"></span></h1>
+  <div id="hosts">
+  </div>
 
     <script>
-      console.log(window.location);
       var target = $.getUrlVar('target');
-      var url = "http://" + window.location.hostname + ":8098/types/targets/buckets/" + target + "/keys/hosts";
-      console.log(url);
+      var url = "/types/targets/buckets/" + target + "/keys/hosts";
+      d3.select(".targetname").text(target);
 
-      $jsonp.send(url, {
-          callbackName: 'riak-query',
-          onSuccess: function(json) {
-            console.log("hurray!", json);
-          },
-onTimeout: function() {
-console.log("timeout");
-      },
-      timeout: 5
-      });
-
-/*
-$.ajax({url: url,
-    type: "GET",
-    crossDomain: true,
-    contentType: 'text/plain'
-    })
+      var model = [];
+      $.ajax({url: url,
+        type: "GET",
+        contentType: 'text/plain'
+      })
         .done(function(data, status){
             console.log(data);
+            data.split("\n").forEach(function(host) {
+              $.get("/types/hosts/buckets/" + host + "/keys/services")
+                .done(function(services, status) {
+                  console.log(services);
+                  var host_model = {"name": host, "services": []};
+                  model.push(host_model);
+                  services.split("\n").forEach(function(service){
+                    $.get("/types/services/buckets/" + host + "/keys/" + service)
+                      .done(function(state, status) {
+                        host_model.services.push(service + ": " + state);
+                        var view = d3.select("#hosts").selectAll("div").data(model);
+                        view.enter().append("div").append("h2").text(function(d){return d.name;});
+                        var services = view.selectAll("p").data(function(d){return d.services;});
+                        services.enter().append("p").text(function(d){return d;});
+                        })
+                      .fail(function(xhr, status) {
+                        console.log(xhr);
+                        console.log(status);
+                        });
+                  })
+                })
+                .fail(function(xhr, status) {
+                  console.log(xhr);
+                  console.log(status);
+                });
+              });
         })
         .fail(function(xhr, status){
             console.log(xhr);
             console.log(status);
         });
-        */
-        console.log("finished");
     </script>
   </body>
 </html>
