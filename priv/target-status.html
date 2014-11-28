@@ -1,0 +1,98 @@
+<html>
+  <head>
+    <style>
+      .fa-exclamation-triangle { color: red; }
+      .fa-check-circle { color: green; }
+    </style>
+    <link rel="stylesheet" href="/static/font-awesome-4.2.0/css/font-awesome.min.css">
+    <script src="/static/jquery.min.js"></script>
+    <script src="http://node1.node.consul:8098/types/targets/buckets/foo/keys/hosts"></script>
+    <script>
+      $.extend({
+          getUrlVars: function(){
+              var vars = [], hash;
+              var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+              for(var i = 0; i < hashes.length; i++) {
+                  hash = hashes[i].split('=');
+                  vars.push(hash[0]);
+                  vars[hash[0]] = hash[1];
+              }
+              return vars;
+          },
+          getUrlVar: function(name){
+              return $.getUrlVars()[name];
+          }
+      });
+    </script>
+    <script>
+var $jsonp = (function(){
+  var that = {};
+
+  that.send = function(src, options) {
+    var callback_name = options.callbackName || 'callback',
+      on_success = options.onSuccess || function(){},
+      on_timeout = options.onTimeout || function(){},
+      timeout = options.timeout || 10; // sec
+
+    var timeout_trigger = window.setTimeout(function(){
+      window[callback_name] = function(){};
+      on_timeout();
+    }, timeout * 1000);
+
+    window[callback_name] = function(data){
+      window.clearTimeout(timeout_trigger);
+      on_success(data);
+    }
+
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = src;
+
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  return that;
+})();
+    </script>
+  </head>
+  <body>
+  <h3>TADAHHHHHHHHHHHHHHHHH</h3>
+    <i class="fa fa-exclamation-triangle fa-4x fa-fw"></i>
+    <i class="fa fa-check-circle fa-4x fa-fw"></i>
+
+    <script>
+      console.log(window.location);
+      var target = $.getUrlVar('target');
+      var url = "http://" + window.location.hostname + ":8098/types/targets/buckets/" + target + "/keys/hosts";
+      console.log(url);
+
+      $jsonp.send(url, {
+          callbackName: 'riak-query',
+          onSuccess: function(json) {
+            console.log("hurray!", json);
+          },
+onTimeout: function() {
+console.log("timeout");
+      },
+      timeout: 5
+      });
+
+/*
+$.ajax({url: url,
+    type: "GET",
+    crossDomain: true,
+    contentType: 'text/plain'
+    })
+        .done(function(data, status){
+            console.log(data);
+        })
+        .fail(function(xhr, status){
+            console.log(xhr);
+            console.log(status);
+        });
+        */
+        console.log("finished");
+    </script>
+  </body>
+</html>
