@@ -35,7 +35,7 @@ init([]) ->
     {ok, _} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
 
     {ok, _} = state_store:start_link(),
-    state_store:store(["yadt", "bar", "baz"], "UNKNOWN"),
+    state_store:store(["targets", "__dummy__", "__state__"], "PRESENT"),
 
     ForwardListener = erlang:spawn_link(?MODULE, listen_for_forwards, []),
     register(forwards, ForwardListener),
