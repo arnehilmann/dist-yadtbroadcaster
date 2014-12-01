@@ -35,6 +35,9 @@ handle_status_req([<<"hosts">>, Host, <<"services">>], Req) ->
 handle_status_req([<<"targets">>, Target, <<"hosts">>], Req) ->
     {ok, Response} = state_store:fetch(["targets", Target, "hosts"]),
     reply(Response, Req);
+handle_status_req([<<"targets">>, Target, <<"full">>], Req) ->
+    {ok, Response} = state_store:fetch(["targets", Target, "hosts"]),
+    reply(Response, Req);
 handle_status_req(Path, Req) ->
     cowboy_req:reply(
       404,
