@@ -3,6 +3,7 @@
 
 -export([start_link/0]).
 -export([store/2]).
+-export([fetch/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -define(RIAK_URL,"http://localhost:8098/types/~s/buckets/~s/keys/~s").
@@ -13,9 +14,19 @@ start_link() ->
 store(Where, What) ->
     gen_server:cast(?MODULE, {store, Where, What}).
 
+fetch(Where) ->
+    gen_server:call(?MODULE, {fetch, Where}).
+
 init([]) ->
     {ok, []}.
 
+handle_call({fetch, Where}, From, State) ->
+    io:format("fetching info from ~p~n", [Where]),
+    Url = list_to_binary(io_lib:format(?RIAK_URL, Where)),
+    io:format("url: ~p~n", [Url]),
+    {ok, StatusCode, ResponseHeaders, ClientRef} = hackney:get(Url),
+    {ok, Response} = hackney:body(ClientRef),
+    {reply, {ok, Response}, State};
 handle_call(Args, From, _State) ->
     io:format("unrecognized call with args ~p from ~p~n", [Args, From]),
     {noreply, []}.

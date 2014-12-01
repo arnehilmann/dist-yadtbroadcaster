@@ -1,12 +1,16 @@
 <html>
   <head>
-    <link type="text/css" rel="stylesheet" href="yadt.css"></link>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <!--
+    <link type="text/css" rel="stylesheet" href="font-awesome.css"></link>
+    -->
+    <link type="text/css" rel="stylesheet" href="/static/yadt.css"></link>
     <style>
       .fa-exclamation-triangle { color: red; }
       .fa-check-circle { color: green; }
     </style>
-    <script src="jquery.min.js"></script>
-    <script src="d3.min.js"></script>
+    <script src="/static/jquery.min.js"></script>
+    <script src="/static/d3.min.js"></script>
     <script>
       $.extend({
           getUrlVars: function(){
@@ -32,7 +36,7 @@
 
     <script>
       var target = $.getUrlVar('target');
-      var url = "/types/targets/buckets/" + target + "/keys/hosts";
+      var url = "/status/targets/" + target + "/hosts";
       d3.select(".targetname").text(target);
 
       var model = [];
@@ -43,24 +47,26 @@
         .done(function(data, status){
             console.log(data);
             data.split("\n").forEach(function(host) {
-              $.get("/types/hosts/buckets/" + host + "/keys/services")
+              $.get("/status/hosts/" + host + "/services")
                 .done(function(services, status) {
                   console.log(services);
                   var host_model = {"name": host, "services": []};
                   model.push(host_model);
                   services.split("\n").forEach(function(service){
-                    $.get("/types/services/buckets/" + host + "/keys/" + service)
+                    $.get("/status/services/" + host + "/" + service)
                       .done(function(state, status) {
-                        host_model.services.push(service + ": " + state);
+                        host_model.services.push({"name": service, "state": state});
                         var view = d3.select("#hosts").selectAll("div").data(model);
                         view.enter().append("div").append("h2").text(function(d){return d.name;});
                         var services = view.selectAll("p").data(function(d){return d.services;});
-                        services.enter().append("p").text(function(d){return d;});
-                        })
+                        var ps = services.enter().append("p");
+                        ps.append("i").attr("class", function(d){return d.state == "up" ? "fa fa-check-circle" : "fa fa-exclamation-triangle";});
+                        ps.append("span").text(function(d){return d.name;});
+                      })
                       .fail(function(xhr, status) {
                         console.log(xhr);
                         console.log(status);
-                        });
+                      });
                   })
                 })
                 .fail(function(xhr, status) {
