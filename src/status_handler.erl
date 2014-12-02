@@ -8,7 +8,6 @@ init(_Transport, Req, []) ->
     {ok, Req, undefined}.
 
 handle(Req, State) ->
-    %io:format("request: ~n~p~n", [Req]),
     {Url, _} = cowboy_req:url(Req),
     io:format("url: ~n~p~n", [Url]),
     {Path, _} = cowboy_req:path(Req),
@@ -37,8 +36,6 @@ handle_status_req([<<"targets">>, Target, <<"hosts">>], Req) ->
     reply(Response, Req);
 handle_status_req([<<"targets">>, Target, <<"full">>], Req) ->
     {ok, Hosts} = state_store:fetch(["targets", Target, "hosts"]),
-    io:format("hosts: ~p~n", [binary_to_list(Hosts)]),
-    io:format("tokens: ~p~n", [string:tokens(binary_to_list(Hosts), "\n")]),
     Responses = lists:map(fun (Host) ->
                                   {ok, ServicesString} = state_store:fetch([<<"hosts">>, Host, <<"services">>]),
                                   Services = binary:split(ServicesString, <<"\n">>, [global]),
@@ -49,16 +46,12 @@ handle_status_req([<<"targets">>, Target, <<"full">>], Req) ->
                                                             Services
                                                            ),
                                   {ok, ArtefactsString} = state_store:fetch([<<"hosts">>, Host, <<"artefacts">>]),
-                                  io:format("artefacts string:~n~p~n", [ArtefactsString]),
                                   ArtefactsList = binary:split(ArtefactsString, <<"\n">>, [global]),
-                                  io:format("artefacts list:~n~p~n", [ArtefactsList]),
                                   Artefacts = lists:map(fun (ArtefactItem) ->
-                                                                io:format("artefact: ~n~p~n", [ArtefactItem]),
                                                                 [Name, Version] = binary:split(ArtefactItem, <<" ">>),
                                                                 [{<<"name">>, Name}, {<<"version">>, Version}]
                                                         end,
                                                         ArtefactsList),
-                                  io:format("artefacts:~n~p~n", [Artefacts]),
                                   [{<<"host">>, Host}, {<<"services">>, ServiceStates}, {<<"artefacts">>, Artefacts}]
                           end,
                           binary:split(Hosts, <<"\n">>, [global])),
