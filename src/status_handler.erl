@@ -42,9 +42,17 @@ handle_status_req([<<"targets">>, Target, <<"full">>], Req) ->
     Responses = lists:map(fun (Host) ->
                                   {ok, ServicesString} = state_store:fetch([<<"hosts">>, Host, <<"services">>]),
                                   Services = binary:split(ServicesString, <<"\n">>, [global]),
-                                  [{<<"host">>, Host}, {<<"services">>, Services}]
-                          end, binary:split(Hosts, <<"\n">>, [global])),
+                                  ServiceStates = lists:map(fun (Service) ->
+                                                                    {ok, State} = state_store:fetch([<<"services">>, Host, Service]),
+                                                                    [{<<"service">>, Service}, {<<"state">>, State}]
+                                                            end,
+                                                            Services
+                                                           ),
+                                  [{<<"host">>, Host}, {<<"services">>, ServiceStates}]
+                          end,
+                          binary:split(Hosts, <<"\n">>, [global])),
     io:format("response:~n~p~n", [Responses]),
+    io:format("response:~n~p~n", [jsx:encode(Responses)]),
     reply(jsx:prettify(jsx:encode(Responses)), Req);
 handle_status_req(Path, Req) ->
     cowboy_req:reply(
