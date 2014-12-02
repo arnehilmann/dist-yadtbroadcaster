@@ -36,8 +36,16 @@ handle_status_req([<<"targets">>, Target, <<"hosts">>], Req) ->
     {ok, Response} = state_store:fetch(["targets", Target, "hosts"]),
     reply(Response, Req);
 handle_status_req([<<"targets">>, Target, <<"full">>], Req) ->
-    {ok, Response} = state_store:fetch(["targets", Target, "hosts"]),
-    reply(Response, Req);
+    {ok, Hosts} = state_store:fetch(["targets", Target, "hosts"]),
+    io:format("hosts: ~p~n", [binary_to_list(Hosts)]),
+    io:format("tokens: ~p~n", [string:tokens(binary_to_list(Hosts), "\n")]),
+    Responses = lists:map(fun (Host) ->
+                                  {ok, ServicesString} = state_store:fetch([<<"hosts">>, Host, <<"services">>]),
+                                  Services = binary:split(ServicesString, <<"\n">>, [global]),
+                                  [{<<"host">>, Host}, {<<"services">>, Services}]
+                          end, binary:split(Hosts, <<"\n">>, [global])),
+    io:format("response:~n~p~n", [Responses]),
+    reply(jsx:prettify(jsx:encode(Responses)), Req);
 handle_status_req(Path, Req) ->
     cowboy_req:reply(
       404,
