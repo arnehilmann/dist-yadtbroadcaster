@@ -100,7 +100,7 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
     [[{<<"state">>,State},{<<"uri">>,Uri}]] = Payload,
     [_, Hostname, Name] = uri_parse(Uri),
     ok = state_store:store(["services", Hostname, Name], jsx:encode([{<<"service">>, Name}, {<<"state">>, State}])),
-    io:format("Service ~s on ~s is ~s (service-chance)~n", [Name, Hostname, State]);
+    io:format("Service ~s on ~s is ~s (service-change)~n", [Name, Hostname, State]);
 
 deep_inspect([
               {<<"services">>, Services},
