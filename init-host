@@ -8,6 +8,9 @@ FQDN=$(hostname -f)
 
 sed -i "/^nodename/{s/127.0.0.1/$FQDN/g};/^[^#]/{s/127.0.0.1/0.0.0.0/g};s/^storage_backend = .*/storage_backend = memory/" /etc/riak/riak.conf
 
+mkdir /var/log/dist-wamp-router
+chmod o+rwx /var/log/dist-wamp-router
+
 service riak start
 riak-admin bucket-type create targets '{"props":{"allow_mult":false,"last_write_wins":true}}'
 riak-admin bucket-type create hosts '{"props":{"allow_mult":false,"last_write_wins":true}}'
