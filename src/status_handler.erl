@@ -7,17 +7,14 @@
 init(_Transport, Req, []) ->
     {ok, Req, undefined}.
 
-handle(Req, _State) ->
-    {PathInfo, _} = cowboy_req:path_info(Req),
-    io:format("path info: ~p~n", [PathInfo]),
-    reply(<<"ok">>, Req).
-
-reply(Response, Req) ->
+handle(Req, State) ->
     cowboy_req:reply(
-    200,
-    [ {<<"content-type">>, <<"text/plain">>} ],
-    Response,
-    Req).
+      200,
+      [ {<<"content-type">>, <<"text/plain">>} ],
+      <<"ok">>,
+      Req
+     ),
+    {ok, Req, State}.
 
 terminate(_Reason, _Req, _State) ->
     ok.
