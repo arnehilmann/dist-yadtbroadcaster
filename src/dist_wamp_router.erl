@@ -25,13 +25,10 @@ start_link() ->
 init([]) ->
     Dispatch = cowboy_router:compile([
                                       {'_', [
-                                             %{"/", cowboy_static, {priv_file, dist_wamp_router, "index.html"}},
-                                             %{"/target-status", cowboy_static, {priv_file, dist_wamp_router, "target-status.html"}},
-                                             %{"/static/[...]", cowboy_static, {priv_dir, dist_wamp_router, "static"}},
                                              {"/status", status_handler, []},
                                              {"/api/[...]", rest_api_handler, []},
                                              {"/wamp", yadt_ws_handler, []},
-                                             {"/[...]", cowboy_static, {priv_dir, dist_wamp_router, "."}}
+                                             {"/[...]", cowboy_static, {dir, "/var/lib/yadt-broadcaster/docroot"}}
                                             ]}
                                      ]),
     {ok, _} = cowboy:start_http(http, 100, [{port, 8080}],[
