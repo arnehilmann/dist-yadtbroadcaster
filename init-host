@@ -3,12 +3,15 @@ set -e -E -u
 
 cp -R /docker/root/* /
 
+mkdir -p /var/lib/yadt-broadcaster/
+ln -sf /docker/dist-yadtbroadcaster-docroot/src/var/lib/yadt-broadcaster/docroot /var/lib/yadt-broadcaster/docroot
+
 IP=$(ip addr show eth0 | sed "/ inet /{s#/.*##;s#.* ##;p};d")
 FQDN=$(hostname -f)
 
 sed -i "/^nodename/{s/127.0.0.1/$FQDN/g};/^[^#]/{s/127.0.0.1/0.0.0.0/g};s/^storage_backend = .*/storage_backend = memory/" /etc/riak/riak.conf
 
-mkdir /var/log/dist-wamp-router
+mkdir -p /var/log/dist-wamp-router
 chmod o+rwx /var/log/dist-wamp-router
 
 service riak start
