@@ -20,11 +20,11 @@ fetch(Where) ->
 init([]) ->
     {ok, []}.
 
-handle_call({fetch, Where}, From, State) ->
-    io:format("fetching info from ~p~n", [Where]),
+handle_call({fetch, Where}, _From, State) ->
+    %io:format("fetching info from ~p~n", [Where]),
     Url = list_to_binary(io_lib:format(?RIAK_URL, Where)),
-    io:format("url: ~p~n", [Url]),
-    {ok, StatusCode, ResponseHeaders, ClientRef} = hackney:get(Url),
+    %io:format("url: ~p~n", [Url]),
+    {ok, _StatusCode, _ResponseHeaders, ClientRef} = hackney:get(Url),
     {ok, Response} = hackney:body(ClientRef),
     {reply, {ok, Response}, State};
 handle_call(Args, From, _State) ->
@@ -33,7 +33,7 @@ handle_call(Args, From, _State) ->
 
 handle_cast({store, Where, What}, State) ->
     Url = io_lib:format(?RIAK_URL, Where),
-    io:format("~s -> ~s~n", [Url, What]),
+    %io:format("~s -> ~s~n", [Url, What]),
     {ok, StatusCode, _RespHeaders, _ClientRef} = hackney:put(
         Url, [{<<"Content-Type">>, <<"text/plain">>}], What, []
     ),
