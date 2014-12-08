@@ -29,7 +29,7 @@ init([]) ->
                                              %{"/target-status", cowboy_static, {priv_file, dist_wamp_router, "target-status.html"}},
                                              {"/static/[...]", cowboy_static, {priv_dir, dist_wamp_router, "static"}},
                                              {"/status/[...]", status_handler, []},
-                                             {"/wamp", my_ws_handler, []},
+                                             {"/wamp", yadt_ws_handler, []},
                                              {"/[...]", cowboy_static, {priv_dir, dist_wamp_router, "."}}
                                             ]}
                                      ]),

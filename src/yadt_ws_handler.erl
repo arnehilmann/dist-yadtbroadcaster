@@ -1,5 +1,5 @@
 %% @private
--module(my_ws_handler).
+-module(yadt_ws_handler).
 -behaviour(cowboy_websocket_handler).
 
 -export([init/3]).
