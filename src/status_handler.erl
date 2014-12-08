@@ -8,12 +8,8 @@ init(_Transport, Req, []) ->
     {ok, Req, undefined}.
 
 handle(Req, State) ->
-    {Url, _} = cowboy_req:url(Req),
-    io:format("url: ~n~p~n", [Url]),
-    {Path, _} = cowboy_req:path(Req),
-    io:format("path: ~n~p~n", [Path]),
     {PathInfo, _} = cowboy_req:path_info(Req),
-    io:format("path info: ~n~p~n", [PathInfo]),
+    io:format("path info: ~p~n", [PathInfo]),
 
     {ok, Req2} = handle_status_req(PathInfo, Req),
     {ok, Req2, State}.
@@ -55,8 +51,6 @@ handle_status_req([<<"targets">>, Target, <<"full">>], Req) ->
                                   [{<<"host">>, Host}, {<<"services">>, ServiceStates}, {<<"artefacts">>, Artefacts}]
                           end,
                           binary:split(Hosts, <<"\n">>, [global])),
-    io:format("response:~n~p~n", [Responses]),
-    io:format("response:~n~p~n", [jsx:encode(Responses)]),
     reply(jsx:prettify(jsx:encode(Responses)), Req);
 handle_status_req(Path, Req) ->
     cowboy_req:reply(
