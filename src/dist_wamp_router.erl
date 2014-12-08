@@ -34,8 +34,7 @@ init([]) ->
                                             ]}
                                      ]),
     {ok, _} = cowboy:start_http(http, 100, [{port, 8080}],[
-                                                           {env, [{dispatch, Dispatch}]},
-                                                           {middlewares, [cowboy_router, cors_enabler, cowboy_handler]}
+                                                           {env, [{dispatch, Dispatch}]}
                                                           ]),
     {ok, _} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
 
