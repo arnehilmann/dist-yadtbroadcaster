@@ -33,7 +33,7 @@
 
     <script>
       var target = $.getUrlVar('target');
-      var url = "/status/targets/" + target + "/full";
+      var url = "/api/v1/targets/" + target + "/full";
       d3.select(".targetname").text(target);
 
       var model = [];
