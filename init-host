@@ -4,6 +4,7 @@ set -e -E -u
 cp -R /docker/root/* /
 
 mkdir -p /var/lib/yadt-broadcaster/
+rm -rf /var/lib/yadt-broadcaster/docroot
 ln -sf /docker/dist-yadtbroadcaster-docroot/src/var/lib/yadt-broadcaster/docroot /var/lib/yadt-broadcaster/docroot
 
 IP=$(ip addr show eth0 | sed "/ inet /{s#/.*##;s#.* ##;p};d")
