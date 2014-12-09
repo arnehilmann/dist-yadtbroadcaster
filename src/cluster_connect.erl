@@ -4,6 +4,8 @@
 -export([read_peers/0]).
 -export([ping_peers/1]).
 
+-define(NODES_FILE, "/etc/sysconfig/dist-wamp-router.nodes").
+
 ping_peers([]) ->
     ok;
 ping_peers([H|T]) ->
@@ -13,7 +15,7 @@ ping_peers([H|T]) ->
     ping_peers(T).
 
 read_peers() ->
-    case file:read_file("/etc/sysconfig/dist-wamp-router.nodes") of
+    case file:read_file(?NODES_FILE) of
         {error, Reason} ->      io:format("cannot read peers file: ~p~n", [Reason]),
                                 {ok, []};
         {ok, FileContent} ->    Peers = string:tokens(binary_to_list(FileContent), ", \n"),
