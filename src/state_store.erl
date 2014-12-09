@@ -24,9 +24,13 @@ handle_call({fetch, Where}, _From, State) ->
     %io:format("fetching info from ~p~n", [Where]),
     Url = list_to_binary(io_lib:format(?RIAK_URL, Where)),
     %io:format("url: ~p~n", [Url]),
-    {ok, _StatusCode, _ResponseHeaders, ClientRef} = hackney:get(Url),
-    {ok, Response} = hackney:body(ClientRef),
-    {reply, {ok, Response}, State};
+    case hackney:get(Url) of
+        {error, Reason} -> io:format("Problem while fetching ~p: ~p~n", [Url, Reason]),
+                           {reply, {error, Reason}, State};
+        {ok, _StatusCode, _ResponseHeaders, ClientRef} ->
+                           {ok, Response} = hackney:body(ClientRef),
+                           {reply, {ok, Response}, State}
+    end;
 handle_call(Args, From, _State) ->
     io:format("unrecognized call with args ~p from ~p~n", [Args, From]),
     {noreply, []}.
