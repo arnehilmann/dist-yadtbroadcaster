@@ -107,7 +107,7 @@ deep_inspect([
               {<<"artefacts">>, Artefacts},
               {<<"name">>, Hostname}
              ]) ->
-    io:format("host ~p found~n", [Hostname]),
+    %io:format("host ~p found~n", [Hostname]),
     store_services_of_host(Hostname, Services),
     store_artefacts_of_host(Hostname, Artefacts),
     deep_inspect_services(Services);
@@ -120,7 +120,7 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
 deep_inspect([{<<"payload">>, Payload}, _, _, _, _]) ->
     io:format("unknown payload: ~n~p~n", [Payload]);
 deep_inspect([Payload|Rest]) ->
-    io:format("recursing in ~p~n", [Payload]),
+    %io:format("recursing in ~p~n", [Payload]),
     deep_inspect(Payload),
     deep_inspect(Rest);
 deep_inspect(_) ->
