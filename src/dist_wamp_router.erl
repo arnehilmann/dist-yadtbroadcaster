@@ -36,7 +36,6 @@ init([]) ->
                                                           ]),
     {ok, _} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
 
-    {ok, _} = state_store:start_link(),
     state_store:store(["targets", "__dummy__", "__state__"], "PRESENT"),
 
     ForwardListener = erlang:spawn_link(?MODULE, listen_for_forwards, []),
@@ -50,7 +49,16 @@ init([]) ->
 
     ok = ping_peers(Peers),
     io:format("nodes responding: ~p~n", [nodes()]),
-    {ok, {{one_for_one, 10, 10}, []}}.
+    {ok, {{one_for_one, 10, 10},
+    [
+      {state_store,
+        {state_store, start_link, []},
+        permanent,
+        5000,
+        worker,
+        [state_store]
+      }
+    ]}}.
 
 
 ping_peers([]) ->
