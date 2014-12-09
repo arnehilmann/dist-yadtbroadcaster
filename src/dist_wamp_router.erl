@@ -9,7 +9,7 @@
 -export([init/1]).
 
 
--export([listen_for_forwards/0]).
+%-export([listen_for_forwards/0]).
 
 
 -define(WSKEY, {pubsub, wsbroadcast}).
@@ -38,8 +38,9 @@ init([]) ->
 
     %state_store:store(["targets", "__dummy__", "__state__"], "PRESENT"),
 
-    ForwardListener = erlang:spawn_link(?MODULE, listen_for_forwards, []),
-    register(forwards, ForwardListener),
+    ok = message_forwarder:start_listener(),
+    %ForwardListener = erlang:spawn_link(?MODULE, listen_for_forwards, []),
+    %register(forwards, ForwardListener),
 
     %{ok, Dir} = file:get_cwd(),
     %io:format('~p~n', [Dir]),
@@ -59,28 +60,3 @@ init([]) ->
         [state_store]
       }
     ]}}.
-
-
-listen_for_forwards() ->
-    receive
-        {From, Realm, Data} ->
-            io:format("received data from ~p on realm ~p:~n~p~n", [From, Realm, Data]),
-            forward_message(Data, Realm)
-    end,
-    listen_for_forwards().
-
-forward_message(Message, Realm) when is_bitstring(Realm) ->
-  case erwa_realms:get_router(Realm) of
-    {ok,Pid} ->
-      forward_message(Message,Pid);
-    {error,not_found} ->
-      self() ! {erwa,{abort,[{}],no_such_realm}},
-      self() ! {erwa, shutdown},
-      {error,undefined}
-  end;
-forward_message(Message, Router) when is_pid(Router) ->
-  Router ! {forwarded, Message},
-  ok;
-forward_message(AnyData, AnyObject) ->
-    io:format("cannot handle realm/router ~p~ndropping data ~p~n", [AnyObject, AnyData]),
-    ok.
