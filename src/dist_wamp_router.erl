@@ -36,18 +36,18 @@ init([]) ->
                                                           ]),
     {ok, _} = ranch:start_listener(erwa_tcp, 5, ranch_tcp, [{port,5555}], erwa_tcp_handler, []),
 
-    state_store:store(["targets", "__dummy__", "__state__"], "PRESENT"),
+    %state_store:store(["targets", "__dummy__", "__state__"], "PRESENT"),
 
     ForwardListener = erlang:spawn_link(?MODULE, listen_for_forwards, []),
     register(forwards, ForwardListener),
 
-    {ok, Dir} = file:get_cwd(),
-    io:format('~p~n', [Dir]),
+    %{ok, Dir} = file:get_cwd(),
+    %io:format('~p~n', [Dir]),
 
-    {ok, Peers} = read_peers(),
-    io:format('~p~n', [Peers]),
+    {ok, Peers} = cluster_connect:read_peers(),
+    %io:format('~p~n', [Peers]),
 
-    ok = ping_peers(Peers),
+    ok = cluster_connect:ping_peers(Peers),
     io:format("nodes responding: ~p~n", [nodes()]),
     {ok, {{one_for_one, 10, 10},
     [
@@ -60,22 +60,6 @@ init([]) ->
       }
     ]}}.
 
-
-ping_peers([]) ->
-    ok;
-ping_peers([H|T]) ->
-    NodeName = list_to_atom(atom_to_list(erlang:get_cookie()) ++ "@" ++ H),
-    io:format('pinging node ~s~n', [NodeName]),
-    net_adm:ping(NodeName),
-    ping_peers(T).
-
-read_peers() ->
-    case file:read_file("/etc/sysconfig/dist-wamp-router.nodes") of
-        {error, Reason} ->      io:format("cannot read peers file: ~p~n", [Reason]),
-                                {ok, []};
-        {ok, FileContent} ->    Peers = string:tokens(binary_to_list(FileContent), ", \n"),
-                                {ok, Peers}
-    end.
 
 listen_for_forwards() ->
     receive
