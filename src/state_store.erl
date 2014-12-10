@@ -18,13 +18,15 @@ fetch(Where) ->
     gen_server:call(?MODULE, {fetch, Where}).
 
 init([]) ->
+    ok = hackney_pool:start_pool(storepool, [{timeout, 150000}, {max_connections, 100}]),
+    ok = hackney_pool:start_pool(fetchpool, [{timeout, 150000}, {max_connections, 100}]),
     {ok, []}.
 
 handle_call({fetch, Where}, _From, State) ->
     %io:format("fetching info from ~p~n", [Where]),
     Url = list_to_binary(io_lib:format(?RIAK_URL, Where)),
     io:format("fetching info from url: ~p~n", [Url]),
-    case hackney:get(Url, [], <<"">>, [{recv_timeout, 5000}]) of
+    case hackney:get(Url, [], <<"">>, [{recv_timeout, 5000}, {pool, fetchpool}]) of
         {error, Reason} -> io:format("Problem while fetching ~p: ~p~n", [Url, Reason]),
                            {reply, {error, Reason}, State};
         {ok, _StatusCode, _ResponseHeaders, ClientRef} ->
@@ -40,7 +42,7 @@ handle_cast({store, Where, What}, State) ->
     Url = io_lib:format(?RIAK_URL, Where),
     %io:format("~s -> ~s~n", [Url, What]),
     io:format("preparing to put something to ~s~n", [Url]),
-    try hackney:put(Url, [{<<"Content-Type">>, <<"text/plain">>}], What, [{recv_timeout, 5000}, {connect_timeout, 5000}]) of
+    try hackney:put(Url, [{<<"Content-Type">>, <<"text/plain">>}], What, [{pool, storepool}, {recv_timeout, 5000}, {connect_timeout, 5000}]) of
         {ok, StatusCode, _RespHeaders, _ClientRef} ->
             io:format("put returned with status code ~p~n", [StatusCode]),
             if
