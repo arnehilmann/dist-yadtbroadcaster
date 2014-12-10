@@ -148,13 +148,18 @@ flatten_and_join_names(Lists) ->
 store_services_of_host(Hostname, Services) ->
     ServiceNamesString = flatten_and_join_names(Services),
     %io:format("service names string: ~p~n", [ServiceNamesString]),
-    state_store:store(["hosts", Hostname, "services"], ServiceNamesString).
+    io:format("storing services of ~p", [Hostname]),
+    state_store:store(["hosts", Hostname, "services"], ServiceNamesString),
+    io:format("storing services of ~p finished", [Hostname]).
 
 store_artefacts_of_host(Hostname, Artefacts) ->
     %io:format("storing artefacts of ~p:~n~p~n", [Hostname, Artefacts]),
+    io:format("converting artefacts of ~p", [Hostname]),
     ArtefactsNames = string:join(lists:map(fun([{<<"current">>, Version}, _, {<<"name">>, Name}]) -> binary:bin_to_list(Name) ++ " " ++ binary:bin_to_list(Version) end, Artefacts), "\n"),
     %io:format("artefact names: ~p~n", [ArtefactsNames]),
-    state_store:store(["hosts", Hostname, "artefacts"], ArtefactsNames).
+    io:format("storing artefacts of ~p", [Hostname]),
+    state_store:store(["hosts", Hostname, "artefacts"], ArtefactsNames),
+    io:format("storing artefacts of ~p finished", [Hostname]).
 
 store_hosts_of_target(Topic, Payload) ->
     HostNamesString = flatten_and_join_names(Payload),
