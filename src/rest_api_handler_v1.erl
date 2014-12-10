@@ -2,31 +2,59 @@
 -module(rest_api_handler_v1).
 -export([handle_rest_api_call/2]).
 
+wait_for_response_and_reply(Where, Req) ->
+    receive
+        {ok, Response} ->
+            reply(Response, Req);
+        _ ->
+            io:format("unknown reply from state_store ~p~n", [Where]),
+            reply("unknown reply", Req)
+    after
+        2000 ->
+            io:format("timeout while fetching ~p~n", [Where]),
+            reply("timeout", Req)
+    end.
+
+wait_for_response() ->
+    receive
+        {ok, Response} ->
+            {ok, Response};
+        Else ->
+            {error, unknown_response, Else}
+    after
+        2000 ->
+            {error, timeout}
+    end.
+
 handle_rest_api_call([], Req) ->
     reply(<<"ok">>, Req);
-handle_rest_api_call([<<"services">>, Host, ServiceName], Req) ->
-    {ok, Response} = state_store:fetch(["services", Host, ServiceName]),
-    reply(Response, Req);
-handle_rest_api_call([<<"hosts">>, Host, <<"services">>], Req) ->
-    {ok, Response} = state_store:fetch(["hosts", Host, "services"]),
-    reply(Response, Req);
-handle_rest_api_call([<<"targets">>, Target, <<"hosts">>], Req) ->
-    {ok, Response} = state_store:fetch(["targets", Target, "hosts"]),
-    reply(Response, Req);
+handle_rest_api_call([<<"services">>, Host, ServiceName]=Where, Req) ->
+    state_store:fetch(["services", Host, ServiceName], self()),
+    wait_for_response_and_reply(Where, Req);
+handle_rest_api_call([<<"hosts">>, Host, <<"services">>]=Where, Req) ->
+    state_store:fetch(["hosts", Host, "services"], self()),
+    wait_for_response_and_reply(Where, Req);
+handle_rest_api_call([<<"targets">>, Target, <<"hosts">>]=Where, Req) ->
+    state_store:fetch(["targets", Target, "hosts"], self()),
+    wait_for_response_and_reply(Where, Req);
 handle_rest_api_call([<<"targets">>, Target, <<"full">>], Req) ->
-    {ok, Hosts} = state_store:fetch(["targets", Target, "hosts"]),
+    state_store:fetch(["targets", Target, "hosts"], self()),
+    {ok, Hosts} = wait_for_response(),
     Responses = lists:map(
                   fun (Host) ->
-                          {ok, ServicesString} = state_store:fetch([<<"hosts">>, Host, <<"services">>]),
+                          state_store:fetch([<<"hosts">>, Host, <<"services">>], self()),
+                          {ok, ServicesString} = wait_for_response(),
                           Services = binary:split(ServicesString, <<"\n">>, [global]),
                           ServiceStates = lists:map(
                                             fun (Service) ->
-                                                    {ok, State} = state_store:fetch([<<"services">>, Host, Service]),
+                                                    state_store:fetch([<<"services">>, Host, Service], self()),
+                                                    {ok, State} = wait_for_response(),
                                                     [{<<"name">>, Service}, {<<"state">>, State}]
                                             end,
                                             Services
                                            ),
-                          {ok, ArtefactsString} = state_store:fetch([<<"hosts">>, Host, <<"artefacts">>]),
+                          state_store:fetch([<<"hosts">>, Host, <<"artefacts">>], self()),
+                          {ok, ArtefactsString} = wait_for_response(),
                           ArtefactsList = binary:split(ArtefactsString, <<"\n">>, [global]),
                           Artefacts = lists:map(
                                         fun (ArtefactItem) ->
