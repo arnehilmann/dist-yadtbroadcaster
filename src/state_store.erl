@@ -39,9 +39,9 @@ handle_call(Args, From, _State) ->
 handle_cast({store, Where, What}, State) ->
     Url = io_lib:format(?RIAK_URL, Where),
     %io:format("~s -> ~s~n", [Url, What]),
-    io:format("preparing to put something to ~p~n", [Url]), 
+    io:format("preparing to put something to ~p~n", [Url]),
     {ok, StatusCode, _RespHeaders, _ClientRef} = hackney:put(
-        Url, [{<<"Content-Type">>, <<"text/plain">>}], What, []
+        Url, [{<<"Content-Type">>, <<"text/plain">>}], What, [{recv_timeout, 5000}, {connect_timeout, 5000}]
     ),
     io:format("put returned with status code ~p~n", [StatusCode]),
     if
