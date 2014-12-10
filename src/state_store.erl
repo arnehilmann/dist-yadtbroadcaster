@@ -28,7 +28,7 @@ handle_call({fetch, Where}, _From, State) ->
         {error, Reason} -> io:format("Problem while fetching ~p: ~p~n", [Url, Reason]),
                            {reply, {error, Reason}, State};
         {ok, _StatusCode, _ResponseHeaders, ClientRef} ->
-			   io:format("first response received, querying body now"),
+                           io:format("first response received, querying body now~n"),
                            {ok, Response} = hackney:body(ClientRef),
                            {reply, {ok, Response}, State}
     end;
@@ -38,16 +38,19 @@ handle_call(Args, From, _State) ->
 
 handle_cast({store, Where, What}, State) ->
     Url = io_lib:format(?RIAK_URL, Where),
-    io:format("~s -> ~s~n", [Url, What]),
+    %io:format("~s -> ~s~n", [Url, What]),
+    io:format("preparing to put something to ~p~n", [Url]), 
     {ok, StatusCode, _RespHeaders, _ClientRef} = hackney:put(
         Url, [{<<"Content-Type">>, <<"text/plain">>}], What, []
     ),
+    io:format("put returned with status code ~p~n", [StatusCode]),
     if
         StatusCode >= 300 ->
             io:format("status of store: ~p~n", [StatusCode]);
         true ->
             ok
     end,
+    io:format("store to ~p completed~n", [Url]),
     {noreply, State};
 handle_cast(Args, State) ->
     io:format("something went wrong here: ~p~n~p~n", [Args, State]),
