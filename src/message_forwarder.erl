@@ -13,7 +13,7 @@ start_listener() ->
 listen_for_forwards() ->
     receive
         {From, Realm, Data} ->
-            io:format("received data from ~p on realm ~p:~n~p~n", [From, Realm, Data]),
+            io:format("received data from ~p on realm ~p~n", [From, Realm]),
             forward_message(Data, Realm)
     end,
     listen_for_forwards().
