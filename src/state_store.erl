@@ -25,7 +25,7 @@ init([]) ->
 handle_call({fetch, Where}, _From, State) ->
     %io:format("fetching info from ~p~n", [Where]),
     Url = list_to_binary(io_lib:format(?RIAK_URL, Where)),
-    io:format("fetching info from url: ~p~n", [Url]),
+    io:format("fetching info from url: ~s~n", [Url]),
     case hackney:get(Url, [], <<"">>, [{recv_timeout, 5000}, {pool, fetchpool}]) of
         {error, Reason} -> io:format("Problem while fetching ~p: ~p~n", [Url, Reason]),
                            {reply, {error, Reason}, State};
@@ -55,7 +55,7 @@ handle_cast({store, Where, What}, State) ->
         _ ->
             io:format("an exception occured~n")
     end,
-    io:format("store to ~p completed~n", [Url]),
+    io:format("store to ~s completed~n", [Url]),
     {noreply, State};
 handle_cast(Args, State) ->
     io:format("something went wrong here: ~p~n~p~n", [Args, State]),
