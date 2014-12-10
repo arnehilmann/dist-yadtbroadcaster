@@ -18,6 +18,7 @@ start_link() ->
 
 %% supervisor.
 init([]) ->
+    io:format("HHHIIIIIIIIIIIIIIIIIIIIIIIIIIIII!!!!!!!!!!!!!!!!!!!!!!!!!!!!"),
     Dispatch = cowboy_router:compile([
                                       {'_', [
                                              {"/status", status_handler, []},

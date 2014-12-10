@@ -107,7 +107,7 @@ deep_inspect([
               {<<"artefacts">>, Artefacts},
               {<<"name">>, Hostname}
              ]) ->
-    %io:format("host ~p found~n", [Hostname]),
+    io:format("host ~p found~n", [Hostname]),
     store_services_of_host(Hostname, Services),
     store_artefacts_of_host(Hostname, Artefacts),
     deep_inspect_services(Services);
@@ -147,18 +147,18 @@ flatten_and_join_names(Lists) ->
 
 store_services_of_host(Hostname, Services) ->
     ServiceNamesString = flatten_and_join_names(Services),
-    io:format("service names string: ~p~n", [ServiceNamesString]),
+    %io:format("service names string: ~p~n", [ServiceNamesString]),
     state_store:store(["hosts", Hostname, "services"], ServiceNamesString).
 
 store_artefacts_of_host(Hostname, Artefacts) ->
-    io:format("storing artefacts of ~p:~n~p~n", [Hostname, Artefacts]),
+    %io:format("storing artefacts of ~p:~n~p~n", [Hostname, Artefacts]),
     ArtefactsNames = string:join(lists:map(fun([{<<"current">>, Version}, _, {<<"name">>, Name}]) -> binary:bin_to_list(Name) ++ " " ++ binary:bin_to_list(Version) end, Artefacts), "\n"),
-    io:format("artefact names: ~p~n", [ArtefactsNames]),
+    %io:format("artefact names: ~p~n", [ArtefactsNames]),
     state_store:store(["hosts", Hostname, "artefacts"], ArtefactsNames).
 
 store_hosts_of_target(Topic, Payload) ->
     HostNamesString = flatten_and_join_names(Payload),
-    io:format("service names string: ~p~n", [HostNamesString]),
+    %io:format("service names string: ~p~n", [HostNamesString]),
     state_store:store(["targets", Topic, "hosts"], HostNamesString).
 
 uri_parse(Uri) ->
