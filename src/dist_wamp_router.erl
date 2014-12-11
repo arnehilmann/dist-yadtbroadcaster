@@ -37,13 +37,4 @@ init([]) ->
     ok = cluster_connect:ping_peers(Peers),
     io:format("nodes responding: ~p~n", [nodes()]),
 
-    {ok, {{one_for_one, 10, 10},
-    [
-      {state_store,
-        {state_store, start_link, []},
-        permanent,
-        5000,
-        worker,
-        [state_store]
-      }
-    ]}}.
+    {ok, {{one_for_one, 10, 10}, []}}.
