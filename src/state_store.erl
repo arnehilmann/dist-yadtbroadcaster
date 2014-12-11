@@ -8,24 +8,33 @@
 store(Where, What) ->
     Url = io_lib:format(?RIAK_URL, Where),
     io:format("preparing to put something to ~s~n", [Url]),
-    {ok, {Status, _Header, _Body}} = httpc:request(put, {Url, [], "text/plain", What}, [], []),
-    io:format("response: ~p~n", [Status]).
+    Response = httpc:request(put, {Url, [], "text/plain", What}, [], []),
+    handle_response_or_error(Url, Response, noreply).
 
 fetch(Where, From) ->
     Url = io_lib:format(?RIAK_URL, Where),
     io:format("fetching info from url ~s~n", [Url]),
-    case httpc:request(Url) of
-        {error, Reason} ->
-            io:format("Problem while fetching ~p: ~p~n", [Url, Reason]),
-            From ! {error, Reason};
-        {ok, {Status, _Header, Body}} ->
-            {_, Code, Reason} = Status,
-            if
-                Code >= 300 ->
-                    io:format("error response: ~p~n", [Status]),
-                    From ! {error, Reason};
-                true ->
-                    io:format("response from ~s is ~p~n", [Url, Body]),
-                    From ! {ok, Body}
-            end
+    Response = httpc:request(Url),
+    handle_response_or_error(Url, Response, From).
+
+
+handle_response_or_error(Url, {error, Reason}, From) ->
+    io:format("Problem while invoking ~s: ~p~n", [Url, Reason]),
+    reply_if_required({error, Reason}, From);
+
+handle_response_or_error(Url, {ok, {Status, _Header, Body}}, From) ->
+    {_, Code, Reason} = Status,
+    if
+        Code >= 300 ->
+            io:format("error response: ~p~n", [Status]),
+            reply_if_required({error, Reason}, From);
+        true ->
+            io:format("response from ~s has length ~p and code ~p~n", [Url, string:len(Body), Code]),
+            reply_if_required({ok, Body}, From)
     end.
+
+reply_if_required(_What, noreply) ->
+    ok;
+reply_if_required(What, From) ->
+    From ! What,
+    ok.
