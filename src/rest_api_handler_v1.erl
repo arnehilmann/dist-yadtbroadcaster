@@ -5,29 +5,33 @@
 wait_for_response_and_reply(Where, Req) ->
     receive
         {ok, Response} ->
-            reply(Response, Req);
+            reply(200, Response, Req);
         _ ->
             io:format("unknown reply from state_store ~p~n", [Where]),
-            reply("unknown reply", Req)
+            reply(404, "unknown reply", Req)
     after
         2000 ->
             io:format("timeout while fetching ~p~n", [Where]),
-            reply("timeout", Req)
+            reply(404, "timeout", Req)
     end.
 
 wait_for_response() ->
     receive
-        {ok, Response} ->
-            {ok, Response};
-        Else ->
-            {error, unknown_response, Else}
+        {ok, _} = Response ->
+            Response;
+        {error, Reason} ->
+            io:format("an error occured: ~p~n", [Reason]),
+            {error, Reason};
+        Everything ->
+            io:format("Worse things happen at sea...~n~p~n", [Everything]),
+            {error, Everything}
     after
         2000 ->
             {error, timeout}
     end.
 
 handle_rest_api_call([], Req) ->
-    reply(<<"ok">>, Req);
+    reply(200, <<"ok">>, Req);
 handle_rest_api_call([<<"services">>, Host, ServiceName]=Where, Req) ->
     state_store:fetch(["services", Host, ServiceName], self()),
     wait_for_response_and_reply(Where, Req);
@@ -39,7 +43,15 @@ handle_rest_api_call([<<"targets">>, Target, <<"hosts">>]=Where, Req) ->
     wait_for_response_and_reply(Where, Req);
 handle_rest_api_call([<<"targets">>, Target, <<"full">>], Req) ->
     state_store:fetch(["targets", Target, "hosts"], self()),
-    {ok, Hosts} = wait_for_response(),
+    fetch_full_target(wait_for_response(), Req);
+handle_rest_api_call(Path, Req) ->
+    cowboy_req:reply(
+      404,
+      [ {<<"content-type">>, <<"text/plain">>} ],
+      list_to_binary(io_lib:format("no status found for ~p", [Path])),
+      Req).
+
+fetch_full_target({ok, Hosts}, Req) ->
     Responses = lists:map(
                   fun (Host) ->
                           state_store:fetch([<<"hosts">>, Host, <<"services">>], self()),
@@ -66,17 +78,14 @@ handle_rest_api_call([<<"targets">>, Target, <<"full">>], Req) ->
                           [{<<"host">>, list_to_binary(Host)}, {<<"services">>, ServiceStates}, {<<"artefacts">>, Artefacts}]
                   end,
                   string:tokens(Hosts, "\n")),
-    reply(jsx:prettify(jsx:encode(Responses)), Req);
-handle_rest_api_call(Path, Req) ->
-    cowboy_req:reply(
-      404,
-      [ {<<"content-type">>, <<"text/plain">>} ],
-      list_to_binary(io_lib:format("no status found for ~p", [Path])),
-      Req).
+    reply(200, jsx:prettify(jsx:encode(Responses)), Req);
+fetch_full_target({error, Error}, Req) ->
+    Responses = list_to_binary(Error),
+    reply(404, jsx:prettify(jsx:encode(Responses)), Req).
 
-reply(Response, Req) ->
+reply(Status, Response, Req) ->
     cowboy_req:reply(
-      200,
+      Status,
       [ {<<"content-type">>, <<"text/plain">>} ],
       Response,
       Req).
