@@ -13,7 +13,7 @@
 		ranch,
 		cowboy,
 		erwa,
-        hackney,
+        inets,
 		debugger,
 		runtime_tools
 	]},

@@ -8,32 +8,24 @@
 store(Where, What) ->
     Url = io_lib:format(?RIAK_URL, Where),
     io:format("preparing to put something to ~s~n", [Url]),
-    try hackney:put(Url, [{<<"Content-Type">>, <<"text/plain">>}], What, [{pool, storepool}, {recv_timeout, 5000}, {connect_timeout, 5000}]) of
-        {ok, StatusCode, _RespHeaders, _ClientRef} ->
-            io:format("put returned with status code ~p~n", [StatusCode]),
-            if
-                StatusCode >= 300 -> io:format("status of store: ~p~n", [StatusCode]);
-                true -> ok
-            end;
-        _ ->
-            io:format("something bad happened here~n")
-    catch
-        _ ->
-            io:format("an exception occured~n")
-    end,
-    io:format("store to ~s completed~n", [Url]).
+    {ok, {Status, _Header, _Body}} = httpc:request(put, {Url, [], "text/plain", What}, [], []),
+    io:format("response: ~p~n", [Status]).
 
 fetch(Where, From) ->
-    Url = list_to_binary(io_lib:format(?RIAK_URL, Where)),
-    io:format("fetching info from url: ~s~n", [Url]),
-    case hackney:get(Url, [], <<"">>, [{recv_timeout, 5000}, {pool, fetchpool}]) of
+    Url = io_lib:format(?RIAK_URL, Where),
+    io:format("fetching info from url ~s~n", [Url]),
+    case httpc:request(Url) of
         {error, Reason} ->
             io:format("Problem while fetching ~p: ~p~n", [Url, Reason]),
             From ! {error, Reason};
-        {ok, _StatusCode, _ResponseHeaders, ClientRef} ->
-            io:format("first response received, querying body now~n"),
-            {ok, Response} = hackney:body(ClientRef),
-            io:format("response from ~s is:~n~p~n", [Url, Response]),
-            From ! {ok, Response},
-            io:format("response sent back to ~p~n", [From])
+        {ok, {Status, _Header, Body}} ->
+            {_, Code, Reason} = Status,
+            if
+                Code >= 300 ->
+                    io:format("error response: ~p~n", [Status]),
+                    From ! {error, Reason};
+                true ->
+                    io:format("response from ~s is ~p~n", [Url, Body]),
+                    From ! {ok, Body}
+            end
     end.

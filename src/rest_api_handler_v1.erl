@@ -44,28 +44,28 @@ handle_rest_api_call([<<"targets">>, Target, <<"full">>], Req) ->
                   fun (Host) ->
                           state_store:fetch([<<"hosts">>, Host, <<"services">>], self()),
                           {ok, ServicesString} = wait_for_response(),
-                          Services = binary:split(ServicesString, <<"\n">>, [global]),
+                          Services = string:tokens(ServicesString, "\n"),
                           ServiceStates = lists:map(
                                             fun (Service) ->
                                                     state_store:fetch([<<"services">>, Host, Service], self()),
                                                     {ok, State} = wait_for_response(),
-                                                    [{<<"name">>, Service}, {<<"state">>, State}]
+                                                    [{<<"name">>, list_to_binary(Service)}, {<<"state">>, list_to_binary(State)}]
                                             end,
                                             Services
                                            ),
                           state_store:fetch([<<"hosts">>, Host, <<"artefacts">>], self()),
                           {ok, ArtefactsString} = wait_for_response(),
-                          ArtefactsList = binary:split(ArtefactsString, <<"\n">>, [global]),
+                          ArtefactsList = string:tokens(ArtefactsString, "\n"),
                           Artefacts = lists:map(
                                         fun (ArtefactItem) ->
-                                                [Name, Version] = binary:split(ArtefactItem, <<" ">>),
-                                                [{<<"name">>, Name}, {<<"version">>, Version}]
+                                                [Name, Version] = string:tokens(ArtefactItem, " "),
+                                                [{<<"name">>, list_to_binary(Name)}, {<<"version">>, list_to_binary(Version)}]
                                         end,
                                         ArtefactsList
                                        ),
-                          [{<<"host">>, Host}, {<<"services">>, ServiceStates}, {<<"artefacts">>, Artefacts}]
+                          [{<<"host">>, list_to_binary(Host)}, {<<"services">>, ServiceStates}, {<<"artefacts">>, Artefacts}]
                   end,
-                  binary:split(Hosts, <<"\n">>, [global])),
+                  string:tokens(Hosts, "\n")),
     reply(jsx:prettify(jsx:encode(Responses)), Req);
 handle_rest_api_call(Path, Req) ->
     cowboy_req:reply(
