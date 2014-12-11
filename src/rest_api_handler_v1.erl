@@ -19,9 +19,8 @@ wait_for_response() ->
     receive
         {ok, _} = Response ->
             Response;
-        {error, Reason} ->
-            io:format("an error occured: ~p~n", [Reason]),
-            {error, Reason};
+        {error, _} = Error ->
+            Error;
         Everything ->
             io:format("Worse things happen at sea...~n~p~n", [Everything]),
             {error, Everything}
