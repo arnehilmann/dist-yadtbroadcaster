@@ -23,6 +23,7 @@ init([]) ->
                                              {"/status", status_handler, []},
                                              {"/api/[...]", rest_api_handler, []},
                                              {"/wamp", yadt_ws_handler, []},
+                                             {"/", cowboy_static, {file, ?DOCROOT ++ "/index.html"}},
                                              {"/[...]", cowboy_static, {dir, ?DOCROOT}}
                                             ]}
                                      ]),
