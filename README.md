@@ -51,7 +51,9 @@ Configuration
 Run in docker
 -------------
 ```bash
+cd dist-yadtbroadcaster
 git clone https://github.com/arnehilmann/baseimage
+./init-devenv
 export DOCKER_IMAGE=arne/riak
 baseimage/start-dns
 baseimage/start-node 1
