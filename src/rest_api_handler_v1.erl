@@ -37,6 +37,9 @@ handle_rest_api_call([<<"services">>, Host, ServiceName]=Where, Req) ->
 handle_rest_api_call([<<"hosts">>, Host, <<"services">>]=Where, Req) ->
     state_store:fetch(["hosts", Host, "services"], self()),
     wait_for_response_and_reply(Where, Req);
+handle_rest_api_call([<<"hosts">>, Host, <<"status-ignored">>]=Where, Req) ->
+    state_store:fetch(["hosts", Host, "status-ignored"], self()),
+    wait_for_response_and_reply(Where, Req);
 handle_rest_api_call([<<"targets">>, Target, <<"hosts">>]=Where, Req) ->
     state_store:fetch(["targets", Target, "hosts"], self()),
     wait_for_response_and_reply(Where, Req);
