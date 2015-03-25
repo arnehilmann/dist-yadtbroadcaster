@@ -102,6 +102,12 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
     ok = state_store:store(["services", Hostname, Name], State),
     io:format("Service ~s on ~s is ~s (service-change)~n", [Name, Hostname, State]);
 
+deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"host-change">>}, _, _]) ->
+    [[{<<"state">>,State},{<<"uri">>,Uri}]] = Payload,
+    [_, Hostname] = host_uri_parse(Uri),
+    ok = state_store:store(["hosts", Hostname, "status-ignored"], State),
+    io:format("Host ~s: status-ignored is ~s (host-change)~n", [Hostname, State]);
+
 deep_inspect([
               {<<"services">>, Services},
               {<<"artefacts">>, Artefacts},
@@ -170,6 +176,10 @@ uri_parse(Uri) ->
     [Type, HostnameAndName] = binary:split(Uri,<<"://">>),
     [Hostname, Name] = binary:split(HostnameAndName,<<"/">>),
     [Type, Hostname, Name].
+
+host_uri_parse(Uri) ->
+    [Type, Hostname] = binary:split(Uri,<<"://">>),
+    [Type, Hostname].
 
 
 -ifdef(TEST).
