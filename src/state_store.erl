@@ -2,6 +2,7 @@
 
 -export([store/2]).
 -export([fetch/2]).
+-export([delete/1]).
 
 -define(RIAK_URL,"http://localhost:8098/types/~s/buckets/~s/keys/~s").
 
@@ -17,6 +18,11 @@ fetch(Where, From) ->
     Response = httpc:request(Url),
     handle_response_or_error(Url, Response, From).
 
+delete(Where) ->
+    Url = io_lib:format(?RIAK_URL, Where),
+    io:format("deleting content at url ~s~n", [Url]),
+    Response = httpc:request(delete, {Url, []}, [], []),
+    handle_response_or_error(Url, Response, noreply).
 
 handle_response_or_error(Url, {error, Reason}, From) ->
     io:format("Problem while invoking ~s: ~p~n", [Url, Reason]),
