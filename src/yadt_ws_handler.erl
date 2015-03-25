@@ -102,11 +102,15 @@ deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<
     ok = state_store:store(["services", Hostname, Name], State),
     io:format("Service ~s on ~s is ~s (service-change)~n", [Name, Hostname, State]);
 
-deep_inspect([{<<"payload">>, Payload}, {<<"type">>, <<"event">>}, {<<"id">>, <<"host-change">>}, _, _]) ->
-    [[{<<"state">>,State},{<<"uri">>,Uri}]] = Payload,
+deep_inspect([_, {<<"cmd">>, <<"ignore">>}, {<<"uri">>, Uri}, {<<"id">>, <<"status-update">>}, _, {<<"message">>, Message}, _, _]) ->
     [_, Hostname] = host_uri_parse(Uri),
-    ok = state_store:store(["hosts", Hostname, "status-ignored"], State),
-    io:format("Host ~s: status-ignored is ~s (host-change)~n", [Hostname, State]);
+    ok = state_store:store(["hosts", Hostname, "status-ignored"], Message),
+    io:format("Host ~s is ignored (host-change)~n", [Hostname]);
+
+deep_inspect([_, {<<"cmd">>, <<"unignore">>}, {<<"uri">>, Uri}, {<<"id">>, <<"status-update">>}, _, _, _, _]) ->
+    [_, Hostname] = host_uri_parse(Uri),
+    ok = state_store:delete(["hosts", Hostname, "status-ignored"]),
+    io:format("Host ~s is unignored (host-change)~n", [Hostname]);
 
 deep_inspect([
               {<<"services">>, Services},
@@ -129,7 +133,8 @@ deep_inspect([Payload|Rest]) ->
     %io:format("recursing in ~p~n", [Payload]),
     deep_inspect(Payload),
     deep_inspect(Rest);
-deep_inspect(_) ->
+deep_inspect(_Any) ->
+    %io:format("unknown packet: ~n~p~n", [Any]),
     ok.
 
 deep_inspect_services([]) ->
